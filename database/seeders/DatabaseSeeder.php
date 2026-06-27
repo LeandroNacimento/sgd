@@ -2,24 +2,29 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role as RoleEnum;
+use App\Models\Role;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(RoleSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $adminRole = Role::firstWhere('name', RoleEnum::Administrator->value);
+
+        User::firstOrCreate(
+            ['email' => env('ADMIN_EMAIL', 'admin@sgd.local')],
+            [
+                'name' => env('ADMIN_NAME', 'Administrator'),
+                'password' => env('ADMIN_PASSWORD', 'password'),
+                'role_id' => $adminRole?->id,
+            ]
+        );
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\Role as RoleEnum;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +42,36 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Assign the Administrator role.
+     */
+    public function asAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', RoleEnum::Administrator->value)->sole()->id,
+        ]);
+    }
+
+    /**
+     * Assign the Operator role.
+     */
+    public function asOperator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', RoleEnum::Operator->value)->sole()->id,
+        ]);
+    }
+
+    /**
+     * Assign the Viewer role.
+     */
+    public function asViewer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', RoleEnum::Viewer->value)->sole()->id,
         ]);
     }
 }
