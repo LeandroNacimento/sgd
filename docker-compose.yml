@@ -1,0 +1,49 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sgd-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "5173:5173"
+    networks:
+      - sgd
+
+  web:
+    image: nginx:alpine
+    container_name: sgd-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - sgd
+
+  db:
+    image: mysql:8.2
+    container_name: sgd-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-sgd}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - sgd-db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - sgd
+
+networks:
+  sgd:
+    driver: bridge
+
+volumes:
+  sgd-db-data:
