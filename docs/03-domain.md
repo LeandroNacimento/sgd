@@ -45,17 +45,17 @@ Examples:
 
 ### State
 
-Represents the lifecycle stage of a document.
+Represents the lifecycle stage of a document. Controlled by the `DocumentWorkflowService`.
 
-- Draft
-- In Review
-- Published
-- Archived
+- **Draft**: The initial state. Only draft documents can be edited.
+- **In Review**: Document is locked for edits and pending administrator approval.
+- **Published**: Document is officially released. Cannot be reverted to Draft.
+- **Archived**: Document is retired and immutable.
 
 #### Rules:
 
-- Defines allowed transitions
-- Controls edit permissions
+- Defines allowed transitions (e.g., Draft -> In Review).
+- Controls edit permissions via `DocumentPolicy`.
 
 ---
 
@@ -67,40 +67,40 @@ System user with role-based permissions.
 
 ### Role
 
-Defines access level:
+Defines access level (`App\Enums\Role`):
 
-- Administrator
-- Operator
-- Viewer
-
----
-
-### Attachment
-
-Represents files linked to a document.
-
-- Can be PDF, DOCX, images, etc.
-- Belongs to a document
+- **Administrator**: Full access to publish, reject, archive, and view audit trails.
+- **Operator**: Can create documents, upload attachments, and submit drafts for review.
 
 ---
 
-### Audit Log
+### Attachment (Media)
 
-Records all significant changes in the system.
+Represents files linked to a document (managed via `spatie/laravel-medialibrary`).
+
+- Can be PDF, DOC, DOCX, JPG, PNG (Max 10MB per file).
+- Stored on a private disk; access requires authorization.
+- Maximum 5 attachments per document.
+
+---
+
+### Audit Log (Activity)
+
+Records all significant changes in the system (managed via `spatie/laravel-activitylog` through `AuditLoggerInterface`).
 
 Examples:
 
-- Document created
-- State changed
-- Attachment added/removed
-- User updated document
+- Document created/updated/deleted.
+- Workflow transitions (e.g., Draft -> In Review).
+- Attachment added/removed.
+- Records the responsible `causer` (User) and specific dirty properties.
 
 ---
 
 ## Business Rules
 
-- Archived documents are immutable
-- Only administrators can delete documents
-- State transitions must follow defined workflow
-- Every document action generates audit entries
-- Document codes are automatically generated and unique
+- Archived documents are strictly immutable.
+- Only administrators can delete documents or view the audit trail.
+- State transitions must follow defined workflow pathways; database state IDs are not directly editable.
+- Every document action generates audit entries with a human-readable timeline.
+- Document codes are automatically generated sequentially (`DOC-YYYY-0000X`) under database transactions.

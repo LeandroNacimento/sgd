@@ -1,58 +1,146 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Document Management System (SGD)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A robust, enterprise-ready Document Management System (Sistema de Gestão de Documentos - SGD) built with Laravel. This application provides secure document storage, workflow enforcement, comprehensive auditing, and an operational dashboard for organization-wide document governance.
 
-## About Laravel
+## Key Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Domain-Driven Workflows:** Documents progress through strict lifecycle states (Draft &rarr; In Review &rarr; Published &rarr; Archived) enforced by a dedicated `DocumentWorkflowService`.
+- **Role-Based Access Control:** Distinct roles (Operator, Administrator) are managed via robust Laravel Policies.
+- **Secure Attachments:** File attachments are stored securely on a private disk using `spatie/laravel-medialibrary`, preventing unauthorized direct access.
+- **Comprehensive Audit Trail:** All critical business events (creation, updates, uploads, workflow transitions) are tracked via an encapsulated audit layer backed by `spatie/laravel-activitylog`.
+- **Operational Dashboard:** An at-a-glance dashboard surfacing document metrics, state distribution, and a human-readable recent activity timeline.
+- **Advanced Search & Filtering:** Find documents rapidly by exact code matching, wildcard titles, category, or workflow state.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Technology Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 11.x, PHP 8.3
+- **Database:** MySQL 8.x
+- **Frontend:** Laravel Blade, Tailwind CSS, Alpine.js (used minimally for basic UI interactions)
+- **File Management:** Spatie Media Library
+- **Audit Logging:** Spatie Activitylog
+- **Testing:** Pest PHP
+- **Deployment & Development:** Laravel Sail (Docker)
 
-## Learning Laravel
+## Architecture
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+SGD strictly adheres to a layered architecture to maintain clear separation of concerns, ensuring long-term maintainability.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Layered Architecture
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```mermaid
+graph TD
+    Router[Routing Layer] --> Controllers[Controllers]
+    Controllers --> FormRequests[Form Requests / Validation]
+    Controllers --> Policies[Authorization Policies]
+    FormRequests --> Services[Domain Services]
+    Controllers --> Services
+    Services --> Models[Eloquent Models]
+    Services --> AuditLogger[Audit Logger Interface]
+    Models --> DB[(Database)]
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Domain Model
 
-## Contributing
+```mermaid
+erDiagram
+    DOCUMENT ||--o{ MEDIA : "has many attachments"
+    DOCUMENT ||--o{ ACTIVITY : "subject of"
+    DOCUMENT }|--|| USER : "responsible user"
+    DOCUMENT }|--|| CATEGORY : "belongs to"
+    DOCUMENT }|--|| DOCUMENT_STATE : "current state"
+    USER }|--|| ROLE : "has one"
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Document Workflow (Lifecycle)
 
-## Code of Conduct
+```mermaid
+stateDiagram-v2
+    [*] --> Draft : Create Document
+    Draft --> InReview : Submit for Review
+    InReview --> Published : Publish
+    InReview --> Draft : Reject
+    Published --> Archived : Archive
+    Archived --> [*]
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Document Creation Sequence
 
-## Security Vulnerabilities
+```mermaid
+sequenceDiagram
+    actor User
+    participant Controller as DocumentController
+    participant Request as StoreDocumentRequest
+    participant Service as DocumentService
+    participant Generator as DocumentCodeGenerator
+    participant Model as Document
+    participant Audit as AuditLoggerInterface
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    User->>Controller: POST /documents
+    Controller->>Request: Validate & Authorize
+    Request-->>Controller: Validated Data
+    Controller->>Service: create(data)
+    Service->>Generator: generate()
+    Generator-->>Service: DOC-2026-0001
+    Service->>Model: create(data)
+    Model-->>Service: $document
+    Service->>Audit: logDocumentCreated($document, $user)
+    Service-->>Controller: $document
+    Controller-->>User: Redirect to Index (Success)
+```
+
+For more detailed architectural rules and decisions, refer to the [Documentation](docs/).
+
+## Project Structure
+
+- `app/Contracts/`: Strict interfaces (e.g., `AuditLoggerInterface`) shielding the application from third-party coupling.
+- `app/Enums/`: Domain-specific enumerations (Roles, Document States, Priorities) for type safety.
+- `app/Services/`: Core business logic and workflow orchestration (`DocumentService`, `DocumentWorkflowService`, `DashboardService`).
+- `app/Models/`: Thin Eloquent models focused exclusively on data relationships and accessors.
+- `app/Http/Controllers/`: Thin controllers responsible solely for HTTP orchestration.
+- `docs/`: Comprehensive project documentation, RFCs, roadmap, and definition of done.
+
+## Installation and Deployment
+
+SGD is configured to run effortlessly in a local development environment using Laravel Sail (Docker).
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url> sgd
+   cd sgd
+   ```
+
+2. **Install Composer Dependencies:**
+   ```bash
+   docker run --rm \
+       -u "$(id -u):$(id -g)" \
+       -v "$(pwd):/var/www/html" \
+       -w /var/www/html \
+       laravelsail/php83-composer:latest \
+       composer install --ignore-platform-reqs
+   ```
+
+3. **Configure Environment:**
+   ```bash
+   cp .env.example .env
+   ```
+   *(Ensure `DB_CONNECTION=mysql` and standard Sail credentials are used).*
+
+4. **Start the Docker Containers:**
+   ```bash
+   ./vendor/bin/sail up -d
+   ```
+
+5. **Run Setup Commands:**
+   ```bash
+   ./vendor/bin/sail artisan key:generate
+   ./vendor/bin/sail artisan migrate --seed
+   ./vendor/bin/sail npm install
+   ./vendor/bin/sail npm run build
+   ```
+
+6. **Access the Application:**
+   Visit `http://localhost` in your browser. Use the seeded credentials to log in.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](LICENSE).
