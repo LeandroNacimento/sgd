@@ -11,11 +11,13 @@ test('login screen can be rendered', function () {
 
 test('admin users can authenticate using the login screen', function () {
     $this->seed(RoleSeeder::class);
-    $user = User::factory()->asAdmin()->create();
+    $user = User::factory()->asAdmin()->create([
+        'password' => 'my-secure-password',
+    ]);
 
     $response = $this->post('/login', [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => 'my-secure-password',
     ]);
 
     $this->assertAuthenticated();
@@ -23,7 +25,9 @@ test('admin users can authenticate using the login screen', function () {
 });
 
 test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'password' => 'my-secure-password',
+    ]);
 
     $this->post('/login', [
         'email' => $user->email,
