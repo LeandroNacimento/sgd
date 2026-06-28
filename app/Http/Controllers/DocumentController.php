@@ -14,6 +14,7 @@ use App\Services\DocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Spatie\Activitylog\Models\Activity;
 
 class DocumentController extends Controller
 {
@@ -69,7 +70,15 @@ class DocumentController extends Controller
 
         $document->load(['category', 'documentState', 'responsibleUser']);
 
-        return view('documents.show', compact('document'));
+        $activities = [];
+        if (auth()->user()->can('is-admin')) {
+            $activities = Activity::forSubject($document)
+                ->with('causer')
+                ->latest()
+                ->get();
+        }
+
+        return view('documents.show', compact('document', 'activities'));
     }
 
     public function edit(Document $document): View

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\AuditLoggerInterface;
 use App\Enums\DocumentStateName;
 use App\Exceptions\InvalidDocumentTransitionException;
 use App\Models\Document;
@@ -9,6 +10,10 @@ use App\Models\DocumentState;
 
 class DocumentWorkflowService
 {
+    public function __construct(
+        private readonly AuditLoggerInterface $auditLogger
+    ) {}
+
     public function submitForReview(Document $document): void
     {
         if (! $document->isDraft()) {
@@ -47,10 +52,16 @@ class DocumentWorkflowService
 
     private function transitionTo(Document $document, DocumentStateName $stateName): void
     {
+        $oldStateName = $document->documentState->name;
+
         $state = DocumentState::where('name', $stateName->value)->firstOrFail();
 
         $document->update([
             'document_state_id' => $state->id,
         ]);
+
+        if (auth()->check()) {
+            $this->auditLogger->logWorkflowTransition($document, auth()->user(), $oldStateName, $stateName->value);
+        }
     }
 }

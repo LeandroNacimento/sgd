@@ -106,6 +106,65 @@
                 </div>
             </div>
         </div>
+            
+            @if(auth()->user()->can('is-admin') && isset($activities) && $activities->count() > 0)
+                <div class="ds-card mt-6">
+                    <div class="ds-card-header">
+                        <h2 class="text-lg font-semibold ds-text-primary">Audit Trail</h2>
+                    </div>
+                    <div class="ds-card-body">
+                        <div class="flow-root">
+                            <ul role="list" class="-mb-8">
+                                @foreach($activities as $index => $activity)
+                                    <li>
+                                        <div class="relative pb-8">
+                                            @if(!$loop->last)
+                                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                            @endif
+                                            <div class="relative flex space-x-3">
+                                                <div>
+                                                    <span class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center ring-8 ring-white">
+                                                        <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                                    <div>
+                                                        <p class="text-sm text-gray-500">
+                                                            <span class="font-medium text-gray-900">{{ $activity->causer->name ?? 'System' }}</span>
+                                                            {{ $activity->description }}
+                                                        </p>
+                                                        @if($activity->event === 'document.updated' && $activity->properties->count() > 0)
+                                                            <div class="mt-2 text-xs text-gray-500 bg-gray-50 p-2 rounded border border-gray-100">
+                                                                <span class="font-medium">Changes:</span>
+                                                                <ul class="list-disc list-inside mt-1">
+                                                                    @foreach($activity->properties as $key => $value)
+                                                                        <li>{{ ucfirst($key) }} updated</li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </div>
+                                                        @endif
+                                                        @if($activity->event === 'workflow.transition')
+                                                            <div class="mt-2 text-xs text-blue-700 bg-blue-50 p-2 rounded border border-blue-100 font-medium">
+                                                                Transition: {{ $activity->properties['from_state'] ?? 'Unknown' }} &rarr; {{ $activity->properties['to_state'] ?? 'Unknown' }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    <div class="whitespace-nowrap text-right text-sm text-gray-500">
+                                                        <time datetime="{{ $activity->created_at->toIso8601String() }}">{{ $activity->created_at->format('M j, Y H:i') }}</time>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
         
         <div class="space-y-6">
             <div class="ds-card">
