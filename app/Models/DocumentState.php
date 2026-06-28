@@ -16,8 +16,8 @@ class DocumentState extends Model
         'name',
     ];
 
-    public function documents(): HasMany
+    public function documentVersions(): HasMany
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(DocumentVersion::class);
     }
 }

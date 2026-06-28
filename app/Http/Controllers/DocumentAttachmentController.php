@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDocumentAttachmentRequest;
 use App\Models\Document;
+use App\Models\DocumentVersion;
 use App\Services\DocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -31,7 +32,7 @@ class DocumentAttachmentController extends Controller
     {
         Gate::authorize('update', $document);
 
-        if ($media->model_id !== $document->id || $media->model_type !== Document::class) {
+        if ($media->model_type !== DocumentVersion::class || ! $document->versions()->where('id', $media->model_id)->exists()) {
             abort(404);
         }
 
@@ -44,7 +45,7 @@ class DocumentAttachmentController extends Controller
     {
         Gate::authorize('view', $document);
 
-        if ($media->model_id !== $document->id || $media->model_type !== Document::class) {
+        if ($media->model_type !== DocumentVersion::class || ! $document->versions()->where('id', $media->model_id)->exists()) {
             abort(404);
         }
 

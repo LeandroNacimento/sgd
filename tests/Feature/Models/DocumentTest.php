@@ -36,7 +36,7 @@ test('it belongs to a document state', function () {
     $state = DocumentState::factory()->create();
     $document = Document::factory()->create(['document_state_id' => $state->id]);
 
-    expect($document->documentState->id)->toBe($state->id);
+    expect($document->currentVersion->documentState->id)->toBe($state->id);
 });
 
 test('it belongs to a responsible user', function () {

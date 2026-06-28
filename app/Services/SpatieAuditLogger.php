@@ -3,64 +3,64 @@
 namespace App\Services;
 
 use App\Contracts\AuditLoggerInterface;
-use App\Models\Document;
+use App\Models\DocumentVersion;
 use App\Models\User;
 
 class SpatieAuditLogger implements AuditLoggerInterface
 {
-    public function logDocumentCreated(Document $document, User $user): void
+    public function logDocumentCreated(DocumentVersion $version, User $user): void
     {
         activity()
             ->causedBy($user)
-            ->performedOn($document)
+            ->performedOn($version)
             ->event('document.created')
-            ->log('Document was created');
+            ->log('Document version was created');
     }
 
-    public function logDocumentUpdated(Document $document, User $user, array $changes): void
+    public function logDocumentUpdated(DocumentVersion $version, User $user, array $changes): void
     {
         activity()
             ->causedBy($user)
-            ->performedOn($document)
+            ->performedOn($version)
             ->event('document.updated')
             ->withProperties($changes)
-            ->log('Document was updated');
+            ->log('Document version was updated');
     }
 
-    public function logDocumentDeleted(Document $document, User $user): void
+    public function logDocumentDeleted(DocumentVersion $version, User $user): void
     {
         activity()
             ->causedBy($user)
-            ->performedOn($document)
+            ->performedOn($version)
             ->event('document.deleted')
             ->log('Document was deleted');
     }
 
-    public function logAttachmentUploaded(Document $document, User $user, string $filename): void
+    public function logAttachmentUploaded(DocumentVersion $version, User $user, string $filename): void
     {
         activity()
             ->causedBy($user)
-            ->performedOn($document)
+            ->performedOn($version)
             ->event('attachment.uploaded')
             ->withProperties(['filename' => $filename])
             ->log("Attachment uploaded: {$filename}");
     }
 
-    public function logAttachmentDeleted(Document $document, User $user, string $filename): void
+    public function logAttachmentDeleted(DocumentVersion $version, User $user, string $filename): void
     {
         activity()
             ->causedBy($user)
-            ->performedOn($document)
+            ->performedOn($version)
             ->event('attachment.deleted')
             ->withProperties(['filename' => $filename])
             ->log("Attachment deleted: {$filename}");
     }
 
-    public function logWorkflowTransition(Document $document, User $user, string $fromState, string $toState): void
+    public function logWorkflowTransition(DocumentVersion $version, User $user, string $fromState, string $toState): void
     {
         activity()
             ->causedBy($user)
-            ->performedOn($document)
+            ->performedOn($version)
             ->event('workflow.transition')
             ->withProperties([
                 'from_state' => $fromState,

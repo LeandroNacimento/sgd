@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div>
         <label for="title" class="ds-form-label">Title</label>
-        <input type="text" id="title" name="title" value="{{ old('title', $document->title ?? '') }}" class="ds-form-input" required>
+        <input type="text" id="title" name="title" value="{{ old('title', $document->currentVersion->title ?? '') }}" class="ds-form-input" required>
         @error('title')
             <span class="ds-form-error">{{ $message }}</span>
         @enderror
@@ -9,7 +9,7 @@
 
     <div>
         <label for="description" class="ds-form-label">Description</label>
-        <textarea id="description" name="description" rows="4" class="ds-form-input">{{ old('description', $document->description ?? '') }}</textarea>
+        <textarea id="description" name="description" rows="4" class="ds-form-input">{{ old('description', $document->currentVersion->description ?? '') }}</textarea>
         @error('description')
             <span class="ds-form-error">{{ $message }}</span>
         @enderror
