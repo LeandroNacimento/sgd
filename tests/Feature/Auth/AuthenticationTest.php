@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -8,8 +9,9 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('admin users can authenticate using the login screen', function () {
+    $this->seed(RoleSeeder::class);
+    $user = User::factory()->asAdmin()->create();
 
     $response = $this->post('/login', [
         'email' => $user->email,
