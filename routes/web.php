@@ -15,4 +15,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Administrator-only routes
+Route::middleware(['auth', 'can:is-admin'])->group(function () {
+    // Routes added in future phases
+});
+
+// Operator and Administrator routes
+Route::middleware(['auth', 'can:is-operator'])->group(function () {
+    // Routes added in future phases
+});
+
 require __DIR__.'/auth.php';
