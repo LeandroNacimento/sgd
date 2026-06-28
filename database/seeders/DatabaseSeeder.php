@@ -14,7 +14,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
+        $this->call([
+            RoleSeeder::class,
+            CategorySeeder::class,
+            DocumentStateSeeder::class,
+        ]);
 
         $adminRole = Role::firstWhere('name', RoleEnum::Administrator->value);
 
