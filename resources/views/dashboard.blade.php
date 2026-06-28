@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        Dashboard
+        {{ __('dashboard.title') }}
     </x-slot>
 
-    <!-- Top Summary Cards -->
+    <!-- Tarjetas de resumen -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <a href="{{ route('documents.index') }}" class="ds-card hover:bg-gray-50 transition block">
             <div class="ds-card-body flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 truncate">Total Documents</p>
+                    <p class="text-sm font-medium text-gray-500 truncate">{{ __('dashboard.total_documents') }}</p>
                     <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $total_documents }}</p>
                 </div>
                 <div class="p-3 bg-blue-100 rounded-full text-blue-600">
@@ -20,12 +20,12 @@
         @php
             $inReviewState = $documents_by_state['In Review'] ?? null;
             $inReviewCount = $inReviewState['count'] ?? 0;
-            $inReviewId = $inReviewState['id'] ?? null;
+            $inReviewId    = $inReviewState['id'] ?? null;
         @endphp
         <a href="{{ $inReviewId ? route('documents.index', ['document_state_id' => $inReviewId]) : route('documents.index') }}" class="ds-card hover:bg-gray-50 transition block">
             <div class="ds-card-body flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 truncate">Awaiting Review</p>
+                    <p class="text-sm font-medium text-gray-500 truncate">{{ __('dashboard.awaiting_review') }}</p>
                     <p class="mt-1 text-3xl font-semibold text-orange-600">{{ $inReviewCount }}</p>
                 </div>
                 <div class="p-3 bg-orange-100 rounded-full text-orange-600">
@@ -37,12 +37,12 @@
         @php
             $publishedState = $documents_by_state['Published'] ?? null;
             $publishedCount = $publishedState['count'] ?? 0;
-            $publishedId = $publishedState['id'] ?? null;
+            $publishedId    = $publishedState['id'] ?? null;
         @endphp
         <a href="{{ $publishedId ? route('documents.index', ['document_state_id' => $publishedId]) : route('documents.index') }}" class="ds-card hover:bg-gray-50 transition block">
             <div class="ds-card-body flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 truncate">Published</p>
+                    <p class="text-sm font-medium text-gray-500 truncate">{{ __('dashboard.published') }}</p>
                     <p class="mt-1 text-3xl font-semibold text-green-600">{{ $publishedCount }}</p>
                 </div>
                 <div class="p-3 bg-green-100 rounded-full text-green-600">
@@ -53,31 +53,33 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Distribution by State -->
+        <!-- Distribución por estado -->
         <div class="ds-card">
             <div class="ds-card-header">
-                <h2 class="text-lg font-semibold ds-text-primary">Documents by State</h2>
+                <h2 class="text-lg font-semibold ds-text-primary">{{ __('dashboard.by_state') }}</h2>
             </div>
             <div class="ds-card-body p-0">
                 <ul class="divide-y divide-gray-200">
                     @forelse($documents_by_state as $name => $data)
                         <li>
                             <a href="{{ route('documents.index', ['document_state_id' => $data['id']]) }}" class="flex justify-between items-center p-4 hover:bg-gray-50 transition">
-                                <span class="text-sm font-medium text-gray-700">{{ $name }}</span>
+                                <span class="text-sm font-medium text-gray-700">
+                                    {{ \App\Enums\DocumentStateName::tryFrom($name)?->label() ?? $name }}
+                                </span>
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ $data['count'] }}</span>
                             </a>
                         </li>
                     @empty
-                        <li class="p-4 text-sm text-gray-500 italic text-center">No states found.</li>
+                        <li class="p-4 text-sm text-gray-500 italic text-center">{{ __('dashboard.no_states') }}</li>
                     @endforelse
                 </ul>
             </div>
         </div>
 
-        <!-- Recently Created -->
+        <!-- Documentos recientes -->
         <div class="ds-card">
             <div class="ds-card-header">
-                <h2 class="text-lg font-semibold ds-text-primary">Recent Documents</h2>
+                <h2 class="text-lg font-semibold ds-text-primary">{{ __('dashboard.recent_documents') }}</h2>
             </div>
             <div class="ds-card-body p-0">
                 <ul class="divide-y divide-gray-200">
@@ -88,7 +90,7 @@
                                     <p class="text-sm font-medium text-blue-600 truncate">{{ $doc->code }} - {{ $doc->currentVersion->title }}</p>
                                     <div class="ml-2 flex-shrink-0 flex">
                                         <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {{ $doc->currentVersion->documentState->name }}
+                                            {{ $doc->currentVersion->stateLabel() }}
                                         </p>
                                     </div>
                                 </div>
@@ -99,23 +101,23 @@
                                         </p>
                                     </div>
                                     <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                        <p>Created {{ $doc->created_at->diffForHumans() }}</p>
+                                        <p>{{ __('dashboard.created_ago', ['time' => $doc->created_at->diffForHumans()]) }}</p>
                                     </div>
                                 </div>
                             </a>
                         </li>
                     @empty
-                        <li class="p-4 text-sm text-gray-500 italic text-center">No documents found.</li>
+                        <li class="p-4 text-sm text-gray-500 italic text-center">{{ __('dashboard.no_documents') }}</li>
                     @endforelse
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- Recent Activity -->
+    <!-- Actividad reciente -->
     <div class="ds-card mb-6">
         <div class="ds-card-header">
-            <h2 class="text-lg font-semibold ds-text-primary">Recent Activity</h2>
+            <h2 class="text-lg font-semibold ds-text-primary">{{ __('dashboard.recent_activity') }}</h2>
         </div>
         <div class="ds-card-body">
             @if($recent_activities->count() > 0)
@@ -138,28 +140,31 @@
                                         <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                                             <div>
                                                 <p class="text-sm text-gray-500">
-                                                    <span class="font-medium text-gray-900">{{ $activity->causer->name ?? 'System' }}</span>
-                                                    
+                                                    <span class="font-medium text-gray-900">{{ $activity->causer->name ?? __('documents.audit_causer') }}</span>
+
                                                     @if($activity->event === 'document.created')
-                                                        created document
+                                                        {{ __('dashboard.activity_created') }}
                                                     @elseif($activity->event === 'document.updated')
-                                                        updated document
+                                                        {{ __('dashboard.activity_updated') }}
                                                     @elseif($activity->event === 'document.deleted')
-                                                        deleted document
+                                                        {{ __('dashboard.activity_deleted') }}
                                                     @elseif($activity->event === 'attachment.uploaded')
-                                                        uploaded attachment to
+                                                        {{ __('dashboard.activity_uploaded') }}
                                                     @elseif($activity->event === 'attachment.deleted')
-                                                        deleted attachment from
+                                                        {{ __('dashboard.activity_att_deleted') }}
                                                     @elseif($activity->event === 'workflow.transition')
-                                                        transitioned document from <strong>{{ $activity->properties['from_state'] ?? 'Unknown' }}</strong> to <strong>{{ $activity->properties['to_state'] ?? 'Unknown' }}</strong>
+                                                        {!! __('dashboard.activity_transitioned', [
+                                                            'from' => $activity->properties['from_state'] ?? '?',
+                                                            'to'   => $activity->properties['to_state']   ?? '?',
+                                                        ]) !!}
                                                     @else
                                                         {{ $activity->description }}
                                                     @endif
-                                                    
+
                                                     @if($activity->subject && $activity->subject->document)
                                                         <a href="{{ route('documents.show', $activity->subject->document) }}" class="font-medium text-blue-600 hover:underline">{{ $activity->subject->document->code }} ({{ $activity->subject->semantic_version }})</a>
                                                     @else
-                                                        <span class="font-medium text-gray-900">(Deleted Document)</span>
+                                                        <span class="font-medium text-gray-900">{{ __('dashboard.deleted_document') }}</span>
                                                     @endif
                                                 </p>
                                             </div>
@@ -174,7 +179,7 @@
                     </ul>
                 </div>
             @else
-                <p class="text-sm text-gray-500 italic text-center py-4">No recent activity.</p>
+                <p class="text-sm text-gray-500 italic text-center py-4">{{ __('dashboard.no_activity') }}</p>
             @endif
         </div>
     </div>

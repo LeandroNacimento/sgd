@@ -57,6 +57,18 @@ class DocumentVersion extends Model implements HasMedia
         return $this->documentState->name === DocumentStateName::Archived->value;
     }
 
+    /**
+     * Returns the translated display label for the current state.
+     * Delegates to DocumentStateName::label() to keep the translation
+     * lookup deterministic and decoupled from raw string values.
+     */
+    public function stateLabel(): string
+    {
+        $stateName = DocumentStateName::tryFrom($this->documentState->name);
+
+        return $stateName?->label() ?? $this->documentState->name;
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('attachments')
