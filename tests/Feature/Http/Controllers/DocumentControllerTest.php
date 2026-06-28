@@ -149,3 +149,66 @@ test('document code generator continues sequentially from existing document', fu
     $latestDocument = Document::latest('id')->first();
     expect($latestDocument->code)->toBe("DOC-{$year}-000124");
 });
+
+test('documents can be filtered by search, category, state, and priority', function () {
+    $category2 = Category::factory()->create();
+    $state2 = DocumentState::factory()->create(['name' => 'Published']);
+
+    $doc1 = Document::factory()->create([
+        'title' => 'Alpha Document',
+        'code' => 'DOC-2026-100001',
+        'category_id' => $this->category->id,
+        'document_state_id' => $this->state->id,
+        'priority' => DocumentPriority::High->value,
+    ]);
+
+    $doc2 = Document::factory()->create([
+        'title' => 'Beta Record',
+        'code' => 'DOC-2026-100002',
+        'category_id' => $category2->id,
+        'document_state_id' => $state2->id,
+        'priority' => DocumentPriority::Low->value,
+    ]);
+
+    // Test text search (matches doc1 title)
+    $this->actingAs($this->admin)
+        ->get(route('documents.index', ['search' => 'Alpha']))
+        ->assertSee($doc1->title)
+        ->assertDontSee($doc2->title);
+
+    // Test text search (matches doc2 code)
+    $this->actingAs($this->admin)
+        ->get(route('documents.index', ['search' => '100002']))
+        ->assertSee($doc2->title)
+        ->assertDontSee($doc1->title);
+
+    // Test category filter
+    $this->actingAs($this->admin)
+        ->get(route('documents.index', ['category_id' => $category2->id]))
+        ->assertSee($doc2->title)
+        ->assertDontSee($doc1->title);
+
+    // Test priority filter
+    $this->actingAs($this->admin)
+        ->get(route('documents.index', ['priority' => DocumentPriority::High->value]))
+        ->assertSee($doc1->title)
+        ->assertDontSee($doc2->title);
+
+    // Test combined filters (match none)
+    $this->actingAs($this->admin)
+        ->get(route('documents.index', [
+            'category_id' => $this->category->id,
+            'priority' => DocumentPriority::Low->value, // doc1 is High, doc2 is category2
+        ]))
+        ->assertDontSee($doc1->title)
+        ->assertDontSee($doc2->title);
+
+    // Test combined filters (match doc1)
+    $this->actingAs($this->admin)
+        ->get(route('documents.index', [
+            'search' => 'Alpha',
+            'document_state_id' => $this->state->id,
+        ]))
+        ->assertSee($doc1->title)
+        ->assertDontSee($doc2->title);
+});

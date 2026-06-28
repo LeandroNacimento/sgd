@@ -33,9 +33,10 @@
 
 ## Phase 3 - Advanced Features
 
-- Attachments
+- Search, Filtering & Pagination (M8)
+- File Attachments (M9)
+- Workflow & State Transitions (M10)
 - Audit system
-- Search and filtering
 - Dashboard
 
 ---

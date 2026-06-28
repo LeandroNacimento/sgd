@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DocumentPriority;
+use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
 use App\Models\Category;
@@ -19,16 +20,22 @@ class DocumentController extends Controller
         private readonly DocumentService $documentService
     ) {}
 
-    public function index(): View
+    public function index(IndexDocumentRequest $request): View
     {
         Gate::authorize('viewAny', Document::class);
 
         $documents = Document::query()
             ->with(['category', 'documentState', 'responsibleUser'])
+            ->filter($request->validated())
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('documents.index', compact('documents'));
+        $categories = Category::all();
+        $states = DocumentState::all();
+        $priorities = DocumentPriority::cases();
+
+        return view('documents.index', compact('documents', 'categories', 'states', 'priorities'));
     }
 
     public function create(): View

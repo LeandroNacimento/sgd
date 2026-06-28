@@ -14,7 +14,58 @@
         </div>
     @endif
 
-    <div class="ds-card">
+    <div class="ds-card mb-6">
+        <div class="ds-card-body p-4 bg-gray-50 border-b border-gray-200">
+            <form method="GET" action="{{ route('documents.index') }}" class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                    <label for="search" class="ds-form-label text-xs">Search</label>
+                    <input type="text" id="search" name="search" value="{{ request('search') }}" placeholder="Code or Title..." class="ds-form-input ds-form-input-sm w-full">
+                </div>
+                
+                <div class="w-full md:w-48">
+                    <label for="category_id" class="ds-form-label text-xs">Category</label>
+                    <select id="category_id" name="category_id" class="ds-form-input ds-form-input-sm w-full">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="w-full md:w-48">
+                    <label for="document_state_id" class="ds-form-label text-xs">State</label>
+                    <select id="document_state_id" name="document_state_id" class="ds-form-input ds-form-input-sm w-full">
+                        <option value="">All States</option>
+                        @foreach($states as $state)
+                            <option value="{{ $state->id }}" {{ request('document_state_id') == $state->id ? 'selected' : '' }}>
+                                {{ $state->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="w-full md:w-48">
+                    <label for="priority" class="ds-form-label text-xs">Priority</label>
+                    <select id="priority" name="priority" class="ds-form-input ds-form-input-sm w-full">
+                        <option value="">All Priorities</option>
+                        @foreach($priorities as $priority)
+                            <option value="{{ $priority->value }}" {{ request('priority') == $priority->value ? 'selected' : '' }}>
+                                {{ ucfirst($priority->value) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button type="submit" class="ds-btn ds-btn-primary whitespace-nowrap">Filter</button>
+                    @if(request()->anyFilled(['search', 'category_id', 'document_state_id', 'priority']))
+                        <a href="{{ route('documents.index') }}" class="ds-btn ds-btn-secondary whitespace-nowrap">Clear</a>
+                    @endif
+                </div>
+            </form>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
