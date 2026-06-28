@@ -114,4 +114,13 @@ return [
         'medium' => 'Medium',
         'high' => 'High',
     ],
+
+    // Document categories (display labels)
+    'categories' => [
+        'legal' => 'Legal',
+        'hr' => 'HR',
+        'procurement' => 'Procurement',
+        'library' => 'Library',
+        'systems' => 'Systems',
+    ],
 ];

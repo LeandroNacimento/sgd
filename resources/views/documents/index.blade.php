@@ -28,7 +28,7 @@
                         <option value="">{{ __('documents.filter_all_categories') }}</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
+                                {{ $category->label() }}
                             </option>
                         @endforeach
                     </select>
@@ -83,7 +83,7 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="p-4 font-medium ds-text-primary">{{ $doc->code }}</td>
                             <td class="p-4 ds-text-secondary">{{ $doc->currentVersion->title ?? __('documents.no_documents') }} <span class="text-xs text-gray-500 ml-1">({{ $doc->currentVersion->semantic_version ?? 'v1.0' }})</span></td>
-                            <td class="p-4 ds-text-secondary">{{ $doc->category->name }}</td>
+                            <td class="p-4 ds-text-secondary">{{ $doc->category->label() }}</td>
                             <td class="p-4">
                                 @php
                                     $stateKey = strtolower($doc->currentVersion->documentState->name ?? 'draft');
