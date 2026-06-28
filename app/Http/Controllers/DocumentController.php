@@ -23,7 +23,8 @@ class DocumentController extends Controller
     {
         Gate::authorize('viewAny', Document::class);
 
-        $documents = Document::with(['category', 'documentState', 'responsibleUser'])
+        $documents = Document::query()
+            ->with(['category', 'documentState', 'responsibleUser'])
             ->latest()
             ->paginate(10);
 
@@ -43,8 +44,6 @@ class DocumentController extends Controller
 
     public function store(StoreDocumentRequest $request): RedirectResponse
     {
-        Gate::authorize('create', Document::class);
-
         $data = $request->validated();
         // The authenticated user is responsible for the document they create
         $data['responsible_user_id'] = auth()->id();
@@ -76,8 +75,6 @@ class DocumentController extends Controller
 
     public function update(UpdateDocumentRequest $request, Document $document): RedirectResponse
     {
-        Gate::authorize('update', $document);
-
         $this->documentService->update($document, $request->validated());
 
         return redirect()->route('documents.index')->with('success', 'Document updated successfully.');

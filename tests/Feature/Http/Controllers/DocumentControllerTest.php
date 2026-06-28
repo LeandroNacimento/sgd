@@ -126,3 +126,26 @@ test('admin can delete document and it soft deletes', function () {
     $response->assertRedirect(route('documents.index'));
     $this->assertSoftDeleted($document);
 });
+
+test('document code generator continues sequentially from existing document', function () {
+    // Manually create a document with a specific sequence
+    $year = date('Y');
+    Document::factory()->create([
+        'code' => "DOC-{$year}-000123",
+        'document_state_id' => $this->state->id,
+    ]);
+
+    // Create a new document via the controller
+    $this->actingAs($this->operator)
+        ->post(route('documents.store'), [
+            'title' => 'Sequential Document',
+            'description' => 'Test',
+            'priority' => DocumentPriority::Low->value,
+            'category_id' => $this->category->id,
+            'document_state_id' => $this->state->id,
+        ]);
+
+    // Check that the next document gets the next sequence number
+    $latestDocument = Document::latest('id')->first();
+    expect($latestDocument->code)->toBe("DOC-{$year}-000124");
+});
