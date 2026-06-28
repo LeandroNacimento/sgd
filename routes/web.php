@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentAttachmentController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('documents', DocumentController::class);
+
+    // Document Attachments
+    Route::post('documents/{document}/attachments', [DocumentAttachmentController::class, 'store'])->name('documents.attachments.store');
+    Route::delete('documents/{document}/attachments/{media}', [DocumentAttachmentController::class, 'destroy'])->name('documents.attachments.destroy');
+    Route::get('documents/{document}/attachments/{media}/download', [DocumentAttachmentController::class, 'download'])->name('documents.attachments.download');
 });
 
 Route::middleware('auth')->group(function () {
