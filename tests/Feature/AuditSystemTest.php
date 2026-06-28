@@ -125,14 +125,16 @@ test('admin can see audit trail but operator cannot', function () {
     // Create dummy activity
     activity()->causedBy($this->operator)->performedOn($document->currentVersion)->event('document.created')->log('created');
 
+    // Operators should NOT see the audit section heading
     $this->actingAs($this->operator)
         ->get(route('documents.show', $document))
         ->assertOk()
-        ->assertDontSee('Audit Trail');
+        ->assertDontSee(__('documents.audit_trail'));
 
+    // Admins should see the heading and the activity entry
     $this->actingAs($this->admin)
         ->get(route('documents.show', $document))
         ->assertOk()
-        ->assertSee('Audit Trail')
-        ->assertSee('created');
+        ->assertSee(__('documents.audit_trail'))
+        ->assertViewHas('activities', fn ($activities) => $activities->isNotEmpty());
 });

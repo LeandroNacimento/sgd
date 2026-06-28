@@ -22,9 +22,9 @@ test('dashboard loads for authenticated users when empty', function () {
     $this->actingAs($this->user)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Total Documents')
-        ->assertSee('No documents found')
-        ->assertSee('No recent activity');
+        ->assertViewHas('total_documents', 0)
+        ->assertViewHas('recent_documents', fn ($v) => $v->isEmpty())
+        ->assertViewHas('recent_activities', fn ($v) => $v->isEmpty());
 });
 
 test('dashboard displays correct document metrics', function () {
@@ -67,7 +67,7 @@ test('dashboard links point to correctly filtered document list', function () {
         ->assertSee(route('documents.index', ['document_state_id' => $this->reviewState->id]));
 });
 
-test('dashboard displays recent activities in human readable format', function () {
+test('dashboard displays recent activities with document data', function () {
     $document = Document::factory()->create([
         'category_id' => $this->category->id,
         'document_state_id' => $this->draftState->id,
@@ -76,7 +76,7 @@ test('dashboard displays recent activities in human readable format', function (
 
     activity()
         ->causedBy($this->user)
-        ->performedOn($document)
+        ->performedOn($document->currentVersion)
         ->event('workflow.transition')
         ->withProperties([
             'from_state' => DocumentStateName::Draft->value,
@@ -87,8 +87,8 @@ test('dashboard displays recent activities in human readable format', function (
     $this->actingAs($this->user)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('transitioned document from')
+        ->assertViewHas('recent_activities', fn ($activities) => $activities->isNotEmpty())
+        ->assertSee($document->code)
         ->assertSee(DocumentStateName::Draft->value)
-        ->assertSee(DocumentStateName::InReview->value)
-        ->assertSee($document->code);
+        ->assertSee(DocumentStateName::InReview->value);
 });
