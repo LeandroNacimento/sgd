@@ -1,124 +1,114 @@
 <x-app-layout>
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold ds-text-primary">{{ __('documents.title') }}</h1>
+    <x-slot name="title">{{ __('documents.title') }}</x-slot>
+    <x-slot name="actions">
         @can('create', App\Models\Document::class)
-            <a href="{{ route('documents.create') }}" class="ds-btn ds-btn-primary">
+            <x-ds.button href="{{ route('documents.create') }}" variant="primary" size="sm">
                 {{ __('documents.new_document') }}
-            </a>
+            </x-ds.button>
         @endcan
-    </div>
+    </x-slot>
 
     @if(session('success'))
-        <div class="mb-4 p-4 rounded ds-bg-surface border-l-4 border-green-500 ds-text-primary shadow-sm">
+        <div class="mb-4 p-4 rounded-md bg-green-50 border border-green-200 text-green-800 shadow-sm">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="ds-card mb-6">
-        <div class="ds-card-body p-4 bg-gray-50 border-b border-gray-200">
+    <x-ds.card noPadding="true" class="mb-6">
+        <div class="p-4 bg-slate-50 border-b border-slate-200">
             <form method="GET" action="{{ route('documents.index') }}" class="flex flex-col md:flex-row gap-4 items-end">
                 <div class="flex-1 w-full">
-                    <label for="search" class="ds-form-label text-xs">{{ __('documents.filter_search') }}</label>
-                    <input type="text" id="search" name="search" value="{{ request('search') }}" placeholder="{{ __('documents.filter_search_placeholder') }}" class="ds-form-input ds-form-input-sm w-full">
+                    <label for="search" class="block text-sm font-medium text-slate-700 mb-1">{{ __('documents.filter_search') }}</label>
+                    <x-ds.input type="text" id="search" name="search" value="{{ request('search') }}" placeholder="{{ __('documents.filter_search_placeholder') }}" />
                 </div>
 
                 <div class="w-full md:w-48">
-                    <label for="category_id" class="ds-form-label text-xs">{{ __('documents.filter_category') }}</label>
-                    <select id="category_id" name="category_id" class="ds-form-input ds-form-input-sm w-full">
+                    <label for="category_id" class="block text-sm font-medium text-slate-700 mb-1">{{ __('documents.filter_category') }}</label>
+                    <x-ds.select id="category_id" name="category_id">
                         <option value="">{{ __('documents.filter_all_categories') }}</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
                                 {{ $category->label() }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-ds.select>
                 </div>
 
                 <div class="w-full md:w-48">
-                    <label for="document_state_id" class="ds-form-label text-xs">{{ __('documents.filter_state') }}</label>
-                    <select id="document_state_id" name="document_state_id" class="ds-form-input ds-form-input-sm w-full">
+                    <label for="document_state_id" class="block text-sm font-medium text-slate-700 mb-1">{{ __('documents.filter_state') }}</label>
+                    <x-ds.select id="document_state_id" name="document_state_id">
                         <option value="">{{ __('documents.filter_all_states') }}</option>
                         @foreach($states as $state)
                             <option value="{{ $state->id }}" {{ request('document_state_id') == $state->id ? 'selected' : '' }}>
                                 {{ \App\Enums\DocumentStateName::tryFrom($state->name)?->label() ?? $state->name }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-ds.select>
                 </div>
 
                 <div class="w-full md:w-48">
-                    <label for="priority" class="ds-form-label text-xs">{{ __('documents.filter_priority') }}</label>
-                    <select id="priority" name="priority" class="ds-form-input ds-form-input-sm w-full">
+                    <label for="priority" class="block text-sm font-medium text-slate-700 mb-1">{{ __('documents.filter_priority') }}</label>
+                    <x-ds.select id="priority" name="priority">
                         <option value="">{{ __('documents.filter_all_priorities') }}</option>
                         @foreach($priorities as $priority)
                             <option value="{{ $priority->value }}" {{ request('priority') == $priority->value ? 'selected' : '' }}>
                                 {{ __('documents.priorities.' . $priority->value) }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-ds.select>
                 </div>
 
                 <div class="flex gap-2 w-full md:w-auto">
-                    <button type="submit" class="ds-btn ds-btn-primary whitespace-nowrap">{{ __('documents.filter_button') }}</button>
+                    <x-ds.button type="submit" variant="primary">{{ __('documents.filter_button') }}</x-ds.button>
                     @if(request()->anyFilled(['search', 'category_id', 'document_state_id', 'priority']))
-                        <a href="{{ route('documents.index') }}" class="ds-btn ds-btn-secondary whitespace-nowrap">{{ __('documents.filter_clear') }}</a>
+                        <x-ds.button href="{{ route('documents.index') }}" variant="secondary">{{ __('documents.filter_clear') }}</x-ds.button>
                     @endif
                 </div>
             </form>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="ds-bg-page border-b ds-border-ui text-sm ds-text-secondary uppercase">
-                        <th class="p-4 font-semibold">{{ __('documents.column_code') }}</th>
-                        <th class="p-4 font-semibold">{{ __('documents.column_title') }}</th>
-                        <th class="p-4 font-semibold">{{ __('documents.column_category') }}</th>
-                        <th class="p-4 font-semibold">{{ __('documents.column_state') }}</th>
-                        <th class="p-4 font-semibold">{{ __('documents.column_priority') }}</th>
-                        <th class="p-4 font-semibold">{{ __('documents.column_actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y ds-border-ui text-sm">
-                    @forelse($documents as $doc)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="p-4 font-medium ds-text-primary">{{ $doc->code }}</td>
-                            <td class="p-4 ds-text-secondary">{{ $doc->currentVersion->title ?? __('documents.no_documents') }} <span class="text-xs text-gray-500 ml-1">({{ $doc->currentVersion->semantic_version ?? 'v1.0' }})</span></td>
-                            <td class="p-4 ds-text-secondary">{{ $doc->category->label() }}</td>
-                            <td class="p-4">
-                                @php
-                                    $stateKey = strtolower($doc->currentVersion->documentState->name ?? 'draft');
-                                    $badgeClass = match($stateKey) {
-                                        'draft'      => 'ds-badge-draft',
-                                        'in review'  => 'ds-badge-in-review',
-                                        'published'  => 'ds-badge-published',
-                                        'archived'   => 'ds-badge-archived',
-                                        default      => 'ds-badge-draft'
-                                    };
-                                @endphp
-                                <span class="ds-badge {{ $badgeClass }}">{{ $doc->currentVersion->stateLabel() }}</span>
-                            </td>
-                            <td class="p-4 ds-text-secondary">{{ __('documents.priorities.' . $doc->priority->value) }}</td>
-                            <td class="p-4">
-                                <div class="flex items-center gap-2">
-                                    <a href="{{ route('documents.show', $doc) }}" class="ds-text-brand hover:underline">{{ __('documents.view_button') }}</a>
-                                    @can('update', $doc)
-                                        <a href="{{ route('documents.edit', $doc) }}" class="ds-text-secondary hover:underline">{{ __('documents.edit_button') }}</a>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="p-8 text-center ds-text-muted">{{ __('documents.no_documents') }}</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        
+        <x-ds.table :headers="[
+            __('documents.column_code'),
+            __('documents.column_title'),
+            __('documents.column_category'),
+            __('documents.column_state'),
+            __('documents.column_priority'),
+            __('documents.column_actions')
+        ]">
+            @forelse($documents as $doc)
+                <tr class="hover:bg-slate-50 ds-transition">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{{ $doc->code }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {{ $doc->currentVersion->title ?? __('documents.no_documents') }}
+                        <span class="text-xs text-slate-400 ml-1">({{ $doc->currentVersion->semantic_version ?? 'v1.0' }})</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ $doc->category->label() }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <x-ds.status-badge :state="$doc->currentVersion->documentState" :label="$doc->currentVersion->stateLabel()" />
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ __('documents.priorities.' . $doc->priority->value) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('documents.show', $doc) }}" class="text-blue-600 hover:text-blue-900">{{ __('documents.view_button') }}</a>
+                            @can('update', $doc)
+                                <a href="{{ route('documents.edit', $doc) }}" class="text-slate-500 hover:text-slate-700">{{ __('documents.edit_button') }}</a>
+                            @endcan
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="px-6 py-12">
+                        <x-ds.empty-state title="{{ __('documents.no_documents') }}" />
+                    </td>
+                </tr>
+            @endforelse
+        </x-ds.table>
+        
         @if($documents->hasPages())
-            <div class="p-4 border-t ds-border-ui">
+            <div class="p-4 border-t border-slate-200">
                 {{ $documents->links() }}
             </div>
         @endif
-    </div>
+    </x-ds.card>
 </x-app-layout>

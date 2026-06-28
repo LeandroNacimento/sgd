@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-50">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,22 +15,42 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="text-gray-900 antialiased">
-        <div id="app-layout" class="min-h-screen ds-bg-page">
-            <x-topbar />
+    <body class="h-full font-sans antialiased text-slate-900 selection:bg-blue-500 selection:text-white">
+        <div id="app-layout" class="min-h-screen">
+            <x-topbar>
+                @if(isset($title))
+                    <x-slot name="title">{{ $title }}</x-slot>
+                @endif
+                @if(isset($breadcrumbs))
+                    <x-slot name="breadcrumbs">{{ $breadcrumbs }}</x-slot>
+                @endif
+                @if(isset($actions))
+                    <x-slot name="actions">{{ $actions }}</x-slot>
+                @endif
+            </x-topbar>
+            
             <x-sidebar />
 
-            <main class="pt-16 ml-0 md:ml-64 p-6 transition-all duration-200">
-                @isset($header)
-                    <div class="mb-6">
-                        <h1 class="text-2xl font-bold ds-text-primary">
-                            {{ $header }}
-                        </h1>
-                    </div>
-                @endisset
-
-                {{ $slot }}
+            <!-- Main Content Container with SaaS Standard Spacing -->
+            <main class="pt-16 md:pl-64 transition-all duration-200 min-h-screen">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8">
+                    {{ $slot }}
+                </div>
             </main>
         </div>
+
+        <script>
+            // Sidebar Toggle Logic
+            document.addEventListener('DOMContentLoaded', () => {
+                const toggle = document.getElementById('sidebar-toggle');
+                const sidebar = document.getElementById('sidebar');
+                
+                if(toggle && sidebar) {
+                    toggle.addEventListener('click', () => {
+                        sidebar.classList.toggle('-translate-x-full');
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

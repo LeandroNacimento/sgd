@@ -1,21 +1,21 @@
 <x-app-layout>
-    <div class="mb-6">
-        <a href="{{ route('documents.index') }}" class="ds-text-secondary hover:underline text-sm mb-2 inline-block">{{ __('documents.back_to_documents') }}</a>
-        <h1 class="text-2xl font-bold ds-text-primary">{{ __('documents.create_document') }}</h1>
-    </div>
+    <x-slot name="title">{{ __('documents.create_document') }}</x-slot>
+    <x-slot name="breadcrumbs">
+        <a href="{{ route('documents.index') }}" class="hover:text-slate-900 ds-transition">{{ __('documents.back_to_documents') }}</a>
+    </x-slot>
 
-    <div class="ds-card max-w-3xl">
-        <div class="ds-card-body">
+    <div class="max-w-3xl">
+        <x-ds.card>
             <form action="{{ route('documents.store') }}" method="POST">
                 @csrf
 
                 @include('documents._form')
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <a href="{{ route('documents.index') }}" class="ds-btn ds-btn-secondary">{{ __('documents.cancel') }}</a>
-                    <button type="submit" class="ds-btn ds-btn-primary">{{ __('documents.create_button') }}</button>
+                <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-200">
+                    <x-ds.button href="{{ route('documents.index') }}" variant="secondary">{{ __('documents.cancel') }}</x-ds.button>
+                    <x-ds.button type="submit" variant="primary">{{ __('documents.create_button') }}</x-ds.button>
                 </div>
             </form>
-        </div>
+        </x-ds.card>
     </div>
 </x-app-layout>
