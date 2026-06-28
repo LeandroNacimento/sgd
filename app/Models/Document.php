@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DocumentPriority;
+use App\Enums\DocumentStateName;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -66,6 +67,26 @@ class Document extends Model implements HasMedia
             ->when($filters['priority'] ?? null, function ($query, $priority) {
                 $query->where('priority', $priority);
             });
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->documentState->name === DocumentStateName::Draft->value;
+    }
+
+    public function isInReview(): bool
+    {
+        return $this->documentState->name === DocumentStateName::InReview->value;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->documentState->name === DocumentStateName::Published->value;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->documentState->name === DocumentStateName::Archived->value;
     }
 
     public function registerMediaCollections(): void

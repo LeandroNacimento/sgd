@@ -29,7 +29,6 @@ class UpdateDocumentRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'priority' => ['required', 'string', Rule::enum(DocumentPriority::class)],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'document_state_id' => ['required', 'integer', 'exists:document_states,id'],
         ];
     }
 }

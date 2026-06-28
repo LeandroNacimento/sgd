@@ -28,9 +28,8 @@ class StoreDocumentRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'priority' => ['required', 'string', Rule::enum(DocumentPriority::class)],
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'document_state_id' => ['required', 'integer', 'exists:document_states,id'],
+            'priority' => ['required', Rule::enum(DocumentPriority::class)],
+            'category_id' => ['required', 'exists:categories,id'],
         ];
     }
 }

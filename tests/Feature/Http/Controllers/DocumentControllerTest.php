@@ -72,7 +72,7 @@ test('validation failures on store', function () {
             'document_state_id' => 999,
         ]);
 
-    $response->assertSessionHasErrors(['title', 'priority', 'category_id', 'document_state_id']);
+    $response->assertSessionHasErrors(['title', 'priority', 'category_id']);
 });
 
 test('operator can update active document', function () {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DocumentPriority;
+use App\Enums\DocumentStateName;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
@@ -43,17 +44,19 @@ class DocumentController extends Controller
         Gate::authorize('create', Document::class);
 
         $categories = Category::all();
-        $states = DocumentState::all();
         $priorities = DocumentPriority::cases();
 
-        return view('documents.create', compact('categories', 'states', 'priorities'));
+        return view('documents.create', compact('categories', 'priorities'));
     }
 
     public function store(StoreDocumentRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        // The authenticated user is responsible for the document they create
+
         $data['responsible_user_id'] = auth()->id();
+
+        $draftState = DocumentState::where('name', DocumentStateName::Draft->value)->firstOrFail();
+        $data['document_state_id'] = $draftState->id;
 
         $this->documentService->create($data);
 
@@ -74,10 +77,9 @@ class DocumentController extends Controller
         Gate::authorize('update', $document);
 
         $categories = Category::all();
-        $states = DocumentState::all();
         $priorities = DocumentPriority::cases();
 
-        return view('documents.edit', compact('document', 'categories', 'states', 'priorities'));
+        return view('documents.edit', compact('document', 'categories', 'priorities'));
     }
 
     public function update(UpdateDocumentRequest $request, Document $document): RedirectResponse

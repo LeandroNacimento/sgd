@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\DocumentStateName;
 use App\Models\DocumentState;
 use Illuminate\Database\Seeder;
 
@@ -12,10 +13,8 @@ class DocumentStateSeeder extends Seeder
      */
     public function run(): void
     {
-        $states = ['Draft', 'In Review', 'Published', 'Archived'];
-
-        foreach ($states as $state) {
-            DocumentState::firstOrCreate(['name' => $state]);
+        foreach (DocumentStateName::cases() as $state) {
+            DocumentState::firstOrCreate(['name' => $state->value]);
         }
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentAttachmentController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentWorkflowController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('documents/{document}/attachments', [DocumentAttachmentController::class, 'store'])->name('documents.attachments.store');
     Route::delete('documents/{document}/attachments/{media}', [DocumentAttachmentController::class, 'destroy'])->name('documents.attachments.destroy');
     Route::get('documents/{document}/attachments/{media}/download', [DocumentAttachmentController::class, 'download'])->name('documents.attachments.download');
+
+    // Document Workflow
+    Route::post('documents/{document}/workflow/submit-for-review', [DocumentWorkflowController::class, 'submitForReview'])->name('documents.workflow.submitForReview');
+    Route::post('documents/{document}/workflow/publish', [DocumentWorkflowController::class, 'publish'])->name('documents.workflow.publish');
+    Route::post('documents/{document}/workflow/reject', [DocumentWorkflowController::class, 'reject'])->name('documents.workflow.reject');
+    Route::post('documents/{document}/workflow/archive', [DocumentWorkflowController::class, 'archive'])->name('documents.workflow.archive');
 });
 
 Route::middleware('auth')->group(function () {

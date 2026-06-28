@@ -15,7 +15,7 @@
         @enderror
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label for="category_id" class="ds-form-label">Category</label>
             <select id="category_id" name="category_id" class="ds-form-input" required>
@@ -27,21 +27,6 @@
                 @endforeach
             </select>
             @error('category_id')
-                <span class="ds-form-error">{{ $message }}</span>
-            @enderror
-        </div>
-
-        <div>
-            <label for="document_state_id" class="ds-form-label">State</label>
-            <select id="document_state_id" name="document_state_id" class="ds-form-input" required>
-                <option value="">Select a state</option>
-                @foreach($states as $state)
-                    <option value="{{ $state->id }}" {{ old('document_state_id', $document->document_state_id ?? '') == $state->id ? 'selected' : '' }}>
-                        {{ $state->name }}
-                    </option>
-                @endforeach
-            </select>
-            @error('document_state_id')
                 <span class="ds-form-error">{{ $message }}</span>
             @enderror
         </div>

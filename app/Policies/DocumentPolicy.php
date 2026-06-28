@@ -31,21 +31,14 @@ class DocumentPolicy
         return $user->can('is-operator');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Document $document): bool
     {
         if (! $user->can('is-operator')) {
             return false;
         }
 
-        // Rule: Archived documents are immutable
-        if ($document->documentState->name === 'Archived') {
-            return false;
-        }
-
-        return true;
+        // Rule: Documents can only be updated while in Draft
+        return $document->isDraft();
     }
 
     /**
@@ -70,5 +63,27 @@ class DocumentPolicy
     public function forceDelete(User $user, Document $document): bool
     {
         return $user->can('is-admin');
+    }
+
+    // Workflow Authorizations
+
+    public function submitForReview(User $user, Document $document): bool
+    {
+        return $user->can('is-operator') && $document->isDraft();
+    }
+
+    public function publish(User $user, Document $document): bool
+    {
+        return $user->can('is-admin') && $document->isInReview();
+    }
+
+    public function reject(User $user, Document $document): bool
+    {
+        return $user->can('is-admin') && $document->isInReview();
+    }
+
+    public function archive(User $user, Document $document): bool
+    {
+        return $user->can('is-admin') && $document->isPublished();
     }
 }

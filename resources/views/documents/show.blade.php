@@ -110,6 +110,52 @@
         <div class="space-y-6">
             <div class="ds-card">
                 <div class="ds-card-header">
+                    <h2 class="text-lg font-semibold ds-text-primary">Workflow Actions</h2>
+                </div>
+                <div class="ds-card-body space-y-3">
+                    @can('submitForReview', $document)
+                        <form action="{{ route('documents.workflow.submitForReview', $document) }}" method="POST" onsubmit="return confirm('Submit this document for review?');">
+                            @csrf
+                            <button type="submit" class="ds-btn ds-btn-primary w-full text-center justify-center">Submit for Review</button>
+                        </form>
+                    @endcan
+
+                    @can('publish', $document)
+                        <form action="{{ route('documents.workflow.publish', $document) }}" method="POST" onsubmit="return confirm('Publish this document?');">
+                            @csrf
+                            <button type="submit" class="ds-btn bg-green-600 hover:bg-green-700 text-white w-full text-center justify-center border border-transparent shadow-sm rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">Publish Document</button>
+                        </form>
+                    @endcan
+
+                    @can('reject', $document)
+                        <form action="{{ route('documents.workflow.reject', $document) }}" method="POST" onsubmit="return confirm('Reject and return to draft?');">
+                            @csrf
+                            <button type="submit" class="ds-btn ds-btn-danger w-full text-center justify-center">Reject to Draft</button>
+                        </form>
+                    @endcan
+
+                    @can('archive', $document)
+                        <form action="{{ route('documents.workflow.archive', $document) }}" method="POST" onsubmit="return confirm('Archive this document? It cannot be modified afterwards.');">
+                            @csrf
+                            <button type="submit" class="ds-btn bg-gray-600 hover:bg-gray-700 text-white w-full text-center justify-center border border-transparent shadow-sm rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Archive Document</button>
+                        </form>
+                    @endcan
+
+                    @if($document->isArchived())
+                        <div class="text-sm text-gray-500 italic text-center p-2 bg-gray-50 rounded">
+                            This document is archived and read-only.
+                        </div>
+                    @endif
+                    
+                    @if($document->isDraft() && !auth()->user()->can('is-operator'))
+                        <div class="text-sm text-gray-500 italic text-center p-2 bg-gray-50 rounded">
+                            Draft documents can only be submitted by operators.
+                        </div>
+                    @endif
+                </div>
+            </div>
+            <div class="ds-card">
+                <div class="ds-card-header">
                     <h2 class="text-lg font-semibold ds-text-primary">Metadata</h2>
                 </div>
                 <div class="ds-card-body space-y-4">
