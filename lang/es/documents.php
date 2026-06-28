@@ -99,6 +99,24 @@ return [
     'audit_changes' => 'Cambios',
     'audit_field_updated' => ':field actualizado',
     'audit_transition' => 'Transición: :from → :to',
+    'audit_event_created' => 'Versión del documento creada',
+    'audit_event_updated' => 'Versión del documento actualizada',
+    'audit_event_deleted' => 'Documento eliminado',
+    'audit_event_attachment_uploaded' => 'Archivo adjunto subido: :filename',
+    'audit_event_attachment_deleted' => 'Archivo adjunto eliminado: :filename',
+    'audit_event_workflow_transition' => 'Cambio de estado del documento',
+
+    // Flash messages
+    'flash_created' => 'Documento creado exitosamente.',
+    'flash_updated' => 'Documento actualizado exitosamente.',
+    'flash_deleted' => 'Documento eliminado exitosamente.',
+    'flash_submitted' => 'Documento enviado a revisión.',
+    'flash_published' => 'Documento publicado exitosamente.',
+    'flash_rejected' => 'Documento rechazado y devuelto a borrador.',
+    'flash_archived' => 'Documento archivado exitosamente.',
+    'flash_new_version' => 'Nueva versión en borrador creada exitosamente.',
+    'flash_attachment_uploaded' => 'Adjunto subido exitosamente.',
+    'flash_attachment_deleted' => 'Adjunto eliminado exitosamente.',
 
     // Document states (display labels)
     'states' => [
