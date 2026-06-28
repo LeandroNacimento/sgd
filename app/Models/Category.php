@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 
 class Category extends Model
 {
@@ -21,5 +23,15 @@ class Category extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Returns the translated display label for the category.
+     */
+    public function label(): string
+    {
+        $key = 'documents.categories.'.Str::slug($this->name, '_');
+
+        return Lang::has($key) ? __($key) : $this->name;
     }
 }

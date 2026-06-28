@@ -312,7 +312,7 @@
                     </div>
                     <div>
                         <h3 class="ds-text-secondary text-sm font-medium">{{ __('documents.meta_category') }}</h3>
-                        <p class="ds-text-primary mt-1">{{ $document->category->name }}</p>
+                        <p class="ds-text-primary mt-1">{{ $document->category->label() }}</p>
                     </div>
                     <div>
                         <h3 class="ds-text-secondary text-sm font-medium">{{ __('documents.meta_responsible') }}</h3>
