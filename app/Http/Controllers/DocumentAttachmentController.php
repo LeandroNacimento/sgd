@@ -22,7 +22,7 @@ class DocumentAttachmentController extends Controller
         try {
             $this->documentService->addAttachment($document, $request->file('file'));
 
-            return back()->with('success', 'Attachment uploaded successfully.');
+            return back()->with('success', __('documents.flash_attachment_uploaded'));
         } catch (\Exception $e) {
             return back()->withErrors(['file' => $e->getMessage()]);
         }
@@ -38,7 +38,7 @@ class DocumentAttachmentController extends Controller
 
         $this->documentService->removeAttachment($document, $media);
 
-        return back()->with('success', 'Attachment removed successfully.');
+        return back()->with('success', __('documents.flash_attachment_deleted'));
     }
 
     public function download(Document $document, Media $media): BinaryFileResponse

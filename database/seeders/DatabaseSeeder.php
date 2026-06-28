@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         User::firstOrCreate(
             ['email' => env('ADMIN_EMAIL', 'admin@sgd.local')],
             [
-                'name' => env('ADMIN_NAME', 'Administrator'),
+                'name' => env('ADMIN_NAME', 'Administrador'),
                 'password' => env('ADMIN_PASSWORD', 'password'),
                 'role_id' => $adminRole?->id,
             ]

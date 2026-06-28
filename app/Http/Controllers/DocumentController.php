@@ -56,7 +56,7 @@ class DocumentController extends Controller
 
         $this->documentService->create($data);
 
-        return redirect()->route('documents.index')->with('success', 'Document created successfully.');
+        return redirect()->route('documents.index')->with('success', __('documents.flash_created'));
     }
 
     public function show(Document $document): View
@@ -97,7 +97,7 @@ class DocumentController extends Controller
     {
         $this->documentService->update($document, $request->validated());
 
-        return redirect()->route('documents.index')->with('success', 'Document updated successfully.');
+        return redirect()->route('documents.index')->with('success', __('documents.flash_updated'));
     }
 
     public function destroy(Document $document): RedirectResponse
@@ -106,6 +106,6 @@ class DocumentController extends Controller
 
         $this->documentService->delete($document);
 
-        return redirect()->route('documents.index')->with('success', 'Document deleted successfully.');
+        return redirect()->route('documents.index')->with('success', __('documents.flash_deleted'));
     }
 }

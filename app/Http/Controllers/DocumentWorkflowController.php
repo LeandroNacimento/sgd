@@ -21,7 +21,7 @@ class DocumentWorkflowController extends Controller
         try {
             $this->workflowService->submitForReview($document->currentVersion);
 
-            return back()->with('success', 'Document submitted for review.');
+            return back()->with('success', __('documents.flash_submitted'));
         } catch (InvalidDocumentTransitionException $e) {
             return back()->withErrors(['workflow' => $e->getMessage()]);
         }
@@ -34,7 +34,7 @@ class DocumentWorkflowController extends Controller
         try {
             $this->workflowService->publish($document->currentVersion);
 
-            return back()->with('success', 'Document published successfully.');
+            return back()->with('success', __('documents.flash_published'));
         } catch (InvalidDocumentTransitionException $e) {
             return back()->withErrors(['workflow' => $e->getMessage()]);
         }
@@ -47,7 +47,7 @@ class DocumentWorkflowController extends Controller
         try {
             $this->workflowService->reject($document->currentVersion);
 
-            return back()->with('success', 'Document rejected and returned to draft.');
+            return back()->with('success', __('documents.flash_rejected'));
         } catch (InvalidDocumentTransitionException $e) {
             return back()->withErrors(['workflow' => $e->getMessage()]);
         }
@@ -60,7 +60,7 @@ class DocumentWorkflowController extends Controller
         try {
             $this->workflowService->archive($document->currentVersion);
 
-            return back()->with('success', 'Document archived successfully.');
+            return back()->with('success', __('documents.flash_archived'));
         } catch (InvalidDocumentTransitionException $e) {
             return back()->withErrors(['workflow' => $e->getMessage()]);
         }

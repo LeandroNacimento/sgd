@@ -31,7 +31,7 @@
                                         <span class="font-medium text-slate-900">{{ $item->actor }}</span>
                                     @endif
                                     
-                                    {{ $item->title }}
+                                    {!! $item->title !!}
                                     
                                     @if($item->url)
                                         <a href="{{ $item->url }}" class="font-medium text-blue-600 hover:underline">{{ $item->description }}</a>

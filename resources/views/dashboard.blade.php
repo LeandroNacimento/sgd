@@ -5,43 +5,44 @@
 
     <!-- Top Row: KPIs -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <x-ds.kpi-card 
-            title="{{ __('dashboard.total_documents') }}" 
-            value="{{ $total_documents }}" 
-            color="blue"
+        <x-ds.kpi-card title="{{ __('dashboard.total_documents') }}" value="{{ $total_documents }}" color="blue"
             href="{{ route('documents.index') }}">
             <x-slot name="icon">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                </svg>
             </x-slot>
         </x-ds.kpi-card>
 
         @php
             $inReviewState = $documents_by_state['In Review'] ?? null;
             $inReviewCount = $inReviewState['count'] ?? 0;
-            $inReviewId    = $inReviewState['id'] ?? null;
+            $inReviewId = $inReviewState['id'] ?? null;
         @endphp
-        <x-ds.kpi-card 
-            title="{{ __('dashboard.awaiting_review') }}" 
-            value="{{ $inReviewCount }}" 
-            color="orange"
+        <x-ds.kpi-card title="{{ __('dashboard.awaiting_review') }}" value="{{ $inReviewCount }}" color="orange"
             href="{{ $inReviewId ? route('documents.index', ['document_state_id' => $inReviewId]) : route('documents.index') }}">
             <x-slot name="icon">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </x-slot>
         </x-ds.kpi-card>
 
         @php
             $publishedState = $documents_by_state['Published'] ?? null;
             $publishedCount = $publishedState['count'] ?? 0;
-            $publishedId    = $publishedState['id'] ?? null;
+            $publishedId = $publishedState['id'] ?? null;
         @endphp
-        <x-ds.kpi-card 
-            title="{{ __('dashboard.published') }}" 
-            value="{{ $publishedCount }}" 
-            color="green"
+        <x-ds.kpi-card title="{{ __('dashboard.published') }}" value="{{ $publishedCount }}" color="green"
             href="{{ $publishedId ? route('documents.index', ['document_state_id' => $publishedId]) : route('documents.index') }}">
             <x-slot name="icon">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </x-slot>
         </x-ds.kpi-card>
     </div>
@@ -55,11 +56,13 @@
             <ul class="divide-y divide-slate-200">
                 @forelse($documents_by_state as $name => $data)
                     <li>
-                        <a href="{{ route('documents.index', ['document_state_id' => $data['id']]) }}" class="flex justify-between items-center p-4 hover:bg-slate-50 ds-transition">
+                        <a href="{{ route('documents.index', ['document_state_id' => $data['id']]) }}"
+                            class="flex justify-between items-center p-4 hover:bg-slate-50 ds-transition">
                             <span class="text-sm font-medium text-slate-700">
                                 {{ \App\Enums\DocumentStateName::tryFrom($name)?->label() ?? $name }}
                             </span>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">{{ $data['count'] }}</span>
+                            <span
+                                class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">{{ $data['count'] }}</span>
                         </a>
                     </li>
                 @empty
@@ -77,9 +80,11 @@
                     <li>
                         <a href="{{ route('documents.show', $doc) }}" class="block hover:bg-slate-50 p-4 ds-transition">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm font-medium text-blue-600 truncate">{{ $doc->code }} - {{ $doc->currentVersion->title }}</p>
+                                <p class="text-sm font-medium text-blue-600 truncate">{{ $doc->code }} -
+                                    {{ $doc->currentVersion->title }}</p>
                                 <div class="ml-2 flex-shrink-0 flex">
-                                    <x-ds.status-badge :state="$doc->currentVersion->documentState" :label="$doc->currentVersion->stateLabel()" />
+                                    <x-ds.status-badge :state="$doc->currentVersion->documentState"
+                                        :label="$doc->currentVersion->stateLabel()" />
                                 </div>
                             </div>
                             <div class="mt-2 sm:flex sm:justify-between">
@@ -108,19 +113,30 @@
         </x-slot>
         @if($recent_activities->count() > 0)
             @php
-                $timelineItems = $recent_activities->map(function($activity) {
+                $timelineItems = $recent_activities->map(function ($activity) {
                     $metadata = [];
                     $title = $activity->description;
-                    
-                    if($activity->event === 'document.created') $title = __('dashboard.activity_created');
-                    elseif($activity->event === 'document.updated') $title = __('dashboard.activity_updated');
-                    elseif($activity->event === 'document.deleted') $title = __('dashboard.activity_deleted');
-                    elseif($activity->event === 'attachment.uploaded') $title = __('dashboard.activity_uploaded');
-                    elseif($activity->event === 'attachment.deleted') $title = __('dashboard.activity_att_deleted');
-                    elseif($activity->event === 'workflow.transition') {
+
+                    if ($activity->event === 'document.created')
+                        $title = __('dashboard.activity_created');
+                    elseif ($activity->event === 'document.updated')
+                        $title = __('dashboard.activity_updated');
+                    elseif ($activity->event === 'document.deleted')
+                        $title = __('dashboard.activity_deleted');
+                    elseif ($activity->event === 'attachment.uploaded')
+                        $title = __('dashboard.activity_uploaded');
+                    elseif ($activity->event === 'attachment.deleted')
+                        $title = __('dashboard.activity_att_deleted');
+                    elseif ($activity->event === 'workflow.transition') {
+                        $fromKey = $activity->properties['from_state'] ?? '?';
+                        $toKey   = $activity->properties['to_state']   ?? '?';
+
+                        $from = \App\Enums\DocumentStateName::tryFrom($fromKey)?->label() ?? $fromKey;
+                        $to   = \App\Enums\DocumentStateName::tryFrom($toKey)?->label()   ?? $toKey;
+
                         $title = __('dashboard.activity_transitioned', [
-                            'from' => $activity->properties['from_state'] ?? '?',
-                            'to'   => $activity->properties['to_state']   ?? '?',
+                            'from' => $from,
+                            'to'   => $to,
                         ]);
                     }
 

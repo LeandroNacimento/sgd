@@ -22,7 +22,7 @@ class DocumentVersionController extends Controller
         try {
             $this->versionService->createNewVersion($document);
 
-            return redirect()->route('documents.show', $document)->with('success', 'New draft version created successfully.');
+            return redirect()->route('documents.show', $document)->with('success', __('documents.flash_new_version'));
         } catch (\Exception $e) {
             return back()->withErrors(['versioning' => $e->getMessage()]);
         }

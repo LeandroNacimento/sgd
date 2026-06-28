@@ -172,7 +172,16 @@
                     @php
                         $timelineItems = $activities->map(function($activity) {
                             $metadata = [];
-                            $title = $activity->description;
+                            
+                            $title = match($activity->event) {
+                                'document.created' => __('documents.audit_event_created'),
+                                'document.updated' => __('documents.audit_event_updated'),
+                                'document.deleted' => __('documents.audit_event_deleted'),
+                                'attachment.uploaded' => __('documents.audit_event_attachment_uploaded', ['filename' => $activity->properties['filename'] ?? '']),
+                                'attachment.deleted' => __('documents.audit_event_attachment_deleted', ['filename' => $activity->properties['filename'] ?? '']),
+                                'workflow.transition' => __('documents.audit_event_workflow_transition'),
+                                default => $activity->description
+                            };
                             
                             if($activity->event === 'document.updated' && $activity->properties->count() > 0) {
                                 $changes = [];
@@ -183,9 +192,15 @@
                             }
                             
                             if($activity->event === 'workflow.transition') {
+                                $fromKey = $activity->properties['from_state'] ?? '?';
+                                $toKey = $activity->properties['to_state'] ?? '?';
+                                
+                                $from = App\Enums\DocumentStateName::tryFrom($fromKey)?->label() ?? $fromKey;
+                                $to = App\Enums\DocumentStateName::tryFrom($toKey)?->label() ?? $toKey;
+
                                 $metadata['transition'] = __('documents.audit_transition', [
-                                    'from' => $activity->properties['from_state'] ?? '?',
-                                    'to'   => $activity->properties['to_state']   ?? '?',
+                                    'from' => $from,
+                                    'to'   => $to,
                                 ]);
                             }
 
