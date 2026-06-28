@@ -2,21 +2,45 @@
     <div class="mb-6 flex justify-between items-center">
         <div>
             <a href="{{ route('documents.index') }}" class="ds-text-secondary hover:underline text-sm mb-2 inline-block">&larr; Back to Documents</a>
-            <h1 class="text-2xl font-bold ds-text-primary">{{ $document->code }}</h1>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold ds-text-primary">{{ $document->code }} - {{ $version->title ?? 'Untitled' }}</h1>
+                <span class="px-2.5 py-0.5 rounded-md text-sm font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                    {{ $version->semantic_version }}
+                </span>
+            </div>
         </div>
         <div class="flex gap-2">
-            @can('update', $document)
-                <a href="{{ route('documents.edit', $document) }}" class="ds-btn ds-btn-secondary">Edit</a>
-            @endcan
-            @can('delete', $document)
-                <form action="{{ route('documents.destroy', $document) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this document?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="ds-btn ds-btn-danger">Delete</button>
-                </form>
-            @endcan
+            @if($document->current_version_id === $version->id)
+                @can('update', $document)
+                    <a href="{{ route('documents.edit', $document) }}" class="ds-btn ds-btn-secondary">Edit</a>
+                @endcan
+                @if($version->isPublished())
+                    @can('update', $document)
+                        <form action="{{ route('documents.versions.store', $document) }}" method="POST" class="inline-block" onsubmit="return confirm('Create a new draft version?');">
+                            @csrf
+                            <button type="submit" class="ds-btn bg-blue-600 hover:bg-blue-700 text-white">New Version</button>
+                        </form>
+                    @endcan
+                @endif
+                @can('delete', $document)
+                    <form action="{{ route('documents.destroy', $document) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this entire document and all its versions?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="ds-btn ds-btn-danger">Delete</button>
+                    </form>
+                @endcan
+            @endif
         </div>
     </div>
+
+    @if($document->current_version_id !== $version->id)
+        <div class="mb-6 p-4 rounded ds-bg-surface border-l-4 border-yellow-500 text-yellow-800 shadow-sm flex items-center justify-between">
+            <div>
+                <strong>Note:</strong> You are viewing a historical version ({{ $version->semantic_version }}).
+            </div>
+            <a href="{{ route('documents.show', $document) }}" class="ds-text-brand hover:underline text-sm">View Current Version</a>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-2 space-y-6">
@@ -43,22 +67,62 @@
                 <div class="ds-card-body space-y-4">
                     <div>
                         <h3 class="ds-text-secondary text-sm font-medium">Title</h3>
-                        <p class="ds-text-primary mt-1">{{ $document->title }}</p>
+                        <p class="ds-text-primary mt-1">{{ $version->title }}</p>
                     </div>
                     <div>
                         <h3 class="ds-text-secondary text-sm font-medium">Description</h3>
-                        <p class="ds-text-primary mt-1 whitespace-pre-wrap">{{ $document->description ?: 'No description provided.' }}</p>
+                        <p class="ds-text-primary mt-1 whitespace-pre-wrap">{{ $version->description ?: 'No description provided.' }}</p>
                     </div>
                 </div>
             </div>
 
             <div class="ds-card">
+                <div class="ds-card-header flex justify-between items-center">
+                    <h2 class="text-lg font-semibold ds-text-primary">Version History</h2>
+                </div>
+                <div class="ds-card-body p-0">
+                    <ul class="divide-y divide-gray-200">
+                        @foreach($document->versions()->orderBy('version_number', 'desc')->get() as $histVersion)
+                            <li class="p-4 hover:bg-gray-50 {{ $histVersion->id === $version->id ? 'bg-blue-50/50' : '' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-medium ds-text-primary">{{ $histVersion->semantic_version }}</span>
+                                        @php
+                                            $badgeClass = match(strtolower($histVersion->documentState->name)) {
+                                                'draft' => 'ds-badge-draft',
+                                                'in review' => 'ds-badge-in-review',
+                                                'published' => 'ds-badge-published',
+                                                'archived' => 'ds-badge-archived',
+                                                default => 'ds-badge-draft'
+                                            };
+                                        @endphp
+                                        <span class="ds-badge {{ $badgeClass }}">{{ $histVersion->documentState->name }}</span>
+                                        @if($document->current_version_id === $histVersion->id)
+                                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider bg-blue-100 px-2 py-0.5 rounded">Current</span>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                                        <span>{{ $histVersion->created_at->format('M j, Y H:i') }}</span>
+                                        @if($histVersion->id !== $version->id)
+                                            <a href="{{ route('documents.show', ['document' => $document, 'version_id' => $histVersion->id]) }}" class="ds-text-brand hover:underline">View</a>
+                                        @else
+                                            <span class="text-gray-400 cursor-default">Viewing</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ds-card">
                 <div class="ds-card-header">
-                    <h2 class="text-lg font-semibold ds-text-primary">Attachments</h2>
+                    <h2 class="text-lg font-semibold ds-text-primary">Attachments ({{ $version->semantic_version }})</h2>
                 </div>
                 <div class="ds-card-body space-y-4">
                     @php
-                        $attachments = $document->getMedia('attachments');
+                        $attachments = $version->getMedia('attachments');
                     @endphp
                     
                     @if($attachments->count() > 0)
@@ -72,13 +136,15 @@
                                     </div>
                                     <div class="flex space-x-2">
                                         <a href="{{ route('documents.attachments.download', [$document, $attachment]) }}" class="ds-btn ds-btn-secondary py-1 px-2 text-xs">Download</a>
-                                        @can('update', $document)
-                                            <form action="{{ route('documents.attachments.destroy', [$document, $attachment]) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this attachment?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="ds-btn ds-btn-danger py-1 px-2 text-xs">Delete</button>
-                                            </form>
-                                        @endcan
+                                        @if($document->current_version_id === $version->id)
+                                            @can('update', $document)
+                                                <form action="{{ route('documents.attachments.destroy', [$document, $attachment]) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this attachment?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="ds-btn ds-btn-danger py-1 px-2 text-xs">Delete</button>
+                                                </form>
+                                            @endcan
+                                        @endif
                                     </div>
                                 </li>
                             @endforeach
@@ -87,30 +153,31 @@
                         <p class="text-sm text-gray-500 italic">No attachments found.</p>
                     @endif
 
-                    @can('update', $document)
-                        @if($attachments->count() < 5)
-                            <div class="mt-4 pt-4 border-t border-gray-200">
-                                <form action="{{ route('documents.attachments.store', $document) }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-center gap-4">
-                                    @csrf
-                                    <input type="file" name="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" required>
-                                    <button type="submit" class="ds-btn ds-btn-primary whitespace-nowrap">Upload File</button>
-                                </form>
-                                <p class="text-xs text-gray-500 mt-2">Allowed types: PDF, DOC, DOCX, JPG, PNG (Max: 10MB)</p>
-                            </div>
-                        @else
-                            <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-yellow-600">
-                                Maximum of 5 attachments reached.
-                            </div>
-                        @endif
-                    @endcan
+                    @if($document->current_version_id === $version->id)
+                        @can('update', $document)
+                            @if($attachments->count() < 5)
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <form action="{{ route('documents.attachments.store', $document) }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-center gap-4">
+                                        @csrf
+                                        <input type="file" name="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" required>
+                                        <button type="submit" class="ds-btn ds-btn-primary whitespace-nowrap">Upload File</button>
+                                    </form>
+                                    <p class="text-xs text-gray-500 mt-2">Allowed types: PDF, DOC, DOCX, JPG, PNG (Max: 10MB)</p>
+                                </div>
+                            @else
+                                <div class="mt-4 pt-4 border-t border-gray-200 text-sm text-yellow-600">
+                                    Maximum of 5 attachments reached.
+                                </div>
+                            @endif
+                        @endcan
+                    @endif
                 </div>
             </div>
-        </div>
             
             @if(auth()->user()->can('is-admin') && isset($activities) && $activities->count() > 0)
                 <div class="ds-card mt-6">
                     <div class="ds-card-header">
-                        <h2 class="text-lg font-semibold ds-text-primary">Audit Trail</h2>
+                        <h2 class="text-lg font-semibold ds-text-primary">Audit Trail ({{ $version->semantic_version }})</h2>
                     </div>
                     <div class="ds-card-body">
                         <div class="flow-root">
@@ -167,52 +234,55 @@
         </div>
         
         <div class="space-y-6">
-            <div class="ds-card">
-                <div class="ds-card-header">
-                    <h2 class="text-lg font-semibold ds-text-primary">Workflow Actions</h2>
+            @if($document->current_version_id === $version->id)
+                <div class="ds-card">
+                    <div class="ds-card-header">
+                        <h2 class="text-lg font-semibold ds-text-primary">Workflow Actions</h2>
+                    </div>
+                    <div class="ds-card-body space-y-3">
+                        @can('submitForReview', $document)
+                            <form action="{{ route('documents.workflow.submitForReview', $document) }}" method="POST" onsubmit="return confirm('Submit this document for review?');">
+                                @csrf
+                                <button type="submit" class="ds-btn ds-btn-primary w-full text-center justify-center">Submit for Review</button>
+                            </form>
+                        @endcan
+
+                        @can('publish', $document)
+                            <form action="{{ route('documents.workflow.publish', $document) }}" method="POST" onsubmit="return confirm('Publish this document?');">
+                                @csrf
+                                <button type="submit" class="ds-btn bg-green-600 hover:bg-green-700 text-white w-full text-center justify-center border border-transparent shadow-sm rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">Publish Document</button>
+                            </form>
+                        @endcan
+
+                        @can('reject', $document)
+                            <form action="{{ route('documents.workflow.reject', $document) }}" method="POST" onsubmit="return confirm('Reject and return to draft?');">
+                                @csrf
+                                <button type="submit" class="ds-btn ds-btn-danger w-full text-center justify-center">Reject to Draft</button>
+                            </form>
+                        @endcan
+
+                        @can('archive', $document)
+                            <form action="{{ route('documents.workflow.archive', $document) }}" method="POST" onsubmit="return confirm('Archive this document? It cannot be modified afterwards.');">
+                                @csrf
+                                <button type="submit" class="ds-btn bg-gray-600 hover:bg-gray-700 text-white w-full text-center justify-center border border-transparent shadow-sm rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Archive Document</button>
+                            </form>
+                        @endcan
+
+                        @if($version->isArchived())
+                            <div class="text-sm text-gray-500 italic text-center p-2 bg-gray-50 rounded">
+                                This document is archived and read-only.
+                            </div>
+                        @endif
+                        
+                        @if($version->isDraft() && !auth()->user()->can('is-operator'))
+                            <div class="text-sm text-gray-500 italic text-center p-2 bg-gray-50 rounded">
+                                Draft documents can only be submitted by operators.
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                <div class="ds-card-body space-y-3">
-                    @can('submitForReview', $document)
-                        <form action="{{ route('documents.workflow.submitForReview', $document) }}" method="POST" onsubmit="return confirm('Submit this document for review?');">
-                            @csrf
-                            <button type="submit" class="ds-btn ds-btn-primary w-full text-center justify-center">Submit for Review</button>
-                        </form>
-                    @endcan
+            @endif
 
-                    @can('publish', $document)
-                        <form action="{{ route('documents.workflow.publish', $document) }}" method="POST" onsubmit="return confirm('Publish this document?');">
-                            @csrf
-                            <button type="submit" class="ds-btn bg-green-600 hover:bg-green-700 text-white w-full text-center justify-center border border-transparent shadow-sm rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">Publish Document</button>
-                        </form>
-                    @endcan
-
-                    @can('reject', $document)
-                        <form action="{{ route('documents.workflow.reject', $document) }}" method="POST" onsubmit="return confirm('Reject and return to draft?');">
-                            @csrf
-                            <button type="submit" class="ds-btn ds-btn-danger w-full text-center justify-center">Reject to Draft</button>
-                        </form>
-                    @endcan
-
-                    @can('archive', $document)
-                        <form action="{{ route('documents.workflow.archive', $document) }}" method="POST" onsubmit="return confirm('Archive this document? It cannot be modified afterwards.');">
-                            @csrf
-                            <button type="submit" class="ds-btn bg-gray-600 hover:bg-gray-700 text-white w-full text-center justify-center border border-transparent shadow-sm rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">Archive Document</button>
-                        </form>
-                    @endcan
-
-                    @if($document->isArchived())
-                        <div class="text-sm text-gray-500 italic text-center p-2 bg-gray-50 rounded">
-                            This document is archived and read-only.
-                        </div>
-                    @endif
-                    
-                    @if($document->isDraft() && !auth()->user()->can('is-operator'))
-                        <div class="text-sm text-gray-500 italic text-center p-2 bg-gray-50 rounded">
-                            Draft documents can only be submitted by operators.
-                        </div>
-                    @endif
-                </div>
-            </div>
             <div class="ds-card">
                 <div class="ds-card-header">
                     <h2 class="text-lg font-semibold ds-text-primary">Metadata</h2>
@@ -221,7 +291,7 @@
                     <div>
                         <h3 class="ds-text-secondary text-sm font-medium">State</h3>
                         @php
-                            $badgeClass = match(strtolower($document->documentState->name)) {
+                            $badgeClass = match(strtolower($version->documentState->name)) {
                                 'draft' => 'ds-badge-draft',
                                 'in review' => 'ds-badge-in-review',
                                 'published' => 'ds-badge-published',
@@ -230,7 +300,7 @@
                             };
                         @endphp
                         <div class="mt-1">
-                            <span class="ds-badge {{ $badgeClass }}">{{ $document->documentState->name }}</span>
+                            <span class="ds-badge {{ $badgeClass }}">{{ $version->documentState->name }}</span>
                         </div>
                     </div>
                     <div>
@@ -247,12 +317,12 @@
                     </div>
                     <hr class="ds-border-ui">
                     <div>
-                        <h3 class="ds-text-secondary text-sm font-medium">Created At</h3>
-                        <p class="ds-text-primary mt-1">{{ $document->created_at->format('M j, Y H:i') }}</p>
+                        <h3 class="ds-text-secondary text-sm font-medium">Version Created At</h3>
+                        <p class="ds-text-primary mt-1">{{ $version->created_at->format('M j, Y H:i') }}</p>
                     </div>
                     <div>
-                        <h3 class="ds-text-secondary text-sm font-medium">Last Updated</h3>
-                        <p class="ds-text-primary mt-1">{{ $document->updated_at->format('M j, Y H:i') }}</p>
+                        <h3 class="ds-text-secondary text-sm font-medium">Version Last Updated</h3>
+                        <p class="ds-text-primary mt-1">{{ $version->updated_at->format('M j, Y H:i') }}</p>
                     </div>
                 </div>
             </div>

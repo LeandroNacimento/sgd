@@ -53,8 +53,10 @@ test('operator can view create form and store document', function () {
         ]);
 
     $response->assertRedirect(route('documents.index'));
-    $this->assertDatabaseHas('documents', [
+    $this->assertDatabaseHas('document_versions', [
         'title' => 'Test Document',
+    ]);
+    $this->assertDatabaseHas('documents', [
         'priority' => DocumentPriority::Medium->value,
     ]);
 
@@ -91,7 +93,7 @@ test('operator can update active document', function () {
         ]);
 
     $response->assertRedirect(route('documents.index'));
-    $this->assertDatabaseHas('documents', ['id' => $document->id, 'title' => 'New Title']);
+    $this->assertDatabaseHas('document_versions', ['document_id' => $document->id, 'title' => 'New Title']);
 });
 
 test('archived document cannot be updated', function () {

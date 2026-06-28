@@ -82,11 +82,11 @@
                     @forelse($documents as $doc)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="p-4 font-medium ds-text-primary">{{ $doc->code }}</td>
-                            <td class="p-4 ds-text-secondary">{{ $doc->title }}</td>
+                            <td class="p-4 ds-text-secondary">{{ $doc->currentVersion->title ?? 'Untitled' }} <span class="text-xs text-gray-500 ml-1">({{ $doc->currentVersion->semantic_version ?? 'v1.0' }})</span></td>
                             <td class="p-4 ds-text-secondary">{{ $doc->category->name }}</td>
                             <td class="p-4">
                                 @php
-                                    $badgeClass = match(strtolower($doc->documentState->name)) {
+                                    $badgeClass = match(strtolower($doc->currentVersion->documentState->name ?? 'draft')) {
                                         'draft' => 'ds-badge-draft',
                                         'in review' => 'ds-badge-in-review',
                                         'published' => 'ds-badge-published',
@@ -94,7 +94,7 @@
                                         default => 'ds-badge-draft'
                                     };
                                 @endphp
-                                <span class="ds-badge {{ $badgeClass }}">{{ $doc->documentState->name }}</span>
+                                <span class="ds-badge {{ $badgeClass }}">{{ $doc->currentVersion->documentState->name ?? 'Draft' }}</span>
                             </td>
                             <td class="p-4 ds-text-secondary">{{ ucfirst($doc->priority->value) }}</td>
                             <td class="p-4">

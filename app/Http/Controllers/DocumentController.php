@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DocumentPriority;
-use App\Enums\DocumentStateName;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
@@ -27,7 +26,7 @@ class DocumentController extends Controller
         Gate::authorize('viewAny', Document::class);
 
         $documents = Document::query()
-            ->with(['category', 'documentState', 'responsibleUser'])
+            ->with(['category', 'responsibleUser', 'currentVersion.documentState'])
             ->filter($request->validated())
             ->latest()
             ->paginate(10)
@@ -53,11 +52,7 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request): RedirectResponse
     {
         $data = $request->validated();
-
         $data['responsible_user_id'] = auth()->id();
-
-        $draftState = DocumentState::where('name', DocumentStateName::Draft->value)->firstOrFail();
-        $data['document_state_id'] = $draftState->id;
 
         $this->documentService->create($data);
 
@@ -68,17 +63,22 @@ class DocumentController extends Controller
     {
         Gate::authorize('view', $document);
 
-        $document->load(['category', 'documentState', 'responsibleUser']);
+        $document->load(['category', 'responsibleUser', 'versions.documentState']);
+
+        $versionId = request('version_id');
+        $version = $versionId
+            ? $document->versions()->findOrFail($versionId)
+            : $document->currentVersion;
 
         $activities = [];
         if (auth()->user()->can('is-admin')) {
-            $activities = Activity::forSubject($document)
+            $activities = Activity::forSubject($version)
                 ->with('causer')
                 ->latest()
                 ->get();
         }
 
-        return view('documents.show', compact('document', 'activities'));
+        return view('documents.show', compact('document', 'version', 'activities'));
     }
 
     public function edit(Document $document): View
@@ -87,6 +87,8 @@ class DocumentController extends Controller
 
         $categories = Category::all();
         $priorities = DocumentPriority::cases();
+
+        $document->load('currentVersion');
 
         return view('documents.edit', compact('document', 'categories', 'priorities'));
     }
@@ -101,6 +103,7 @@ class DocumentController extends Controller
     public function destroy(Document $document): RedirectResponse
     {
         Gate::authorize('delete', $document);
+
         $this->documentService->delete($document);
 
         return redirect()->route('documents.index')->with('success', 'Document deleted successfully.');

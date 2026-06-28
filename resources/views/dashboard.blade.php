@@ -85,10 +85,10 @@
                         <li>
                             <a href="{{ route('documents.show', $doc) }}" class="block hover:bg-gray-50 p-4 transition">
                                 <div class="flex items-center justify-between">
-                                    <p class="text-sm font-medium text-blue-600 truncate">{{ $doc->code }} - {{ $doc->title }}</p>
+                                    <p class="text-sm font-medium text-blue-600 truncate">{{ $doc->code }} - {{ $doc->currentVersion->title }}</p>
                                     <div class="ml-2 flex-shrink-0 flex">
                                         <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {{ $doc->documentState->name }}
+                                            {{ $doc->currentVersion->documentState->name }}
                                         </p>
                                     </div>
                                 </div>
@@ -156,8 +156,8 @@
                                                         {{ $activity->description }}
                                                     @endif
                                                     
-                                                    @if($activity->subject)
-                                                        <a href="{{ route('documents.show', $activity->subject) }}" class="font-medium text-blue-600 hover:underline">{{ $activity->subject->code }}</a>
+                                                    @if($activity->subject && $activity->subject->document)
+                                                        <a href="{{ route('documents.show', $activity->subject->document) }}" class="font-medium text-blue-600 hover:underline">{{ $activity->subject->document->code }} ({{ $activity->subject->semantic_version }})</a>
                                                     @else
                                                         <span class="font-medium text-gray-900">(Deleted Document)</span>
                                                     @endif

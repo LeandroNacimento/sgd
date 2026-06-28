@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\InvalidDocumentTransitionException;
 use App\Models\Document;
-use App\Services\DocumentWorkflowService;
+use App\Services\DocumentVersionWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 
 class DocumentWorkflowController extends Controller
 {
     public function __construct(
-        private readonly DocumentWorkflowService $workflowService
+        private readonly DocumentVersionWorkflowService $workflowService
     ) {}
 
     public function submitForReview(Document $document): RedirectResponse
@@ -19,7 +19,7 @@ class DocumentWorkflowController extends Controller
         Gate::authorize('submitForReview', $document);
 
         try {
-            $this->workflowService->submitForReview($document);
+            $this->workflowService->submitForReview($document->currentVersion);
 
             return back()->with('success', 'Document submitted for review.');
         } catch (InvalidDocumentTransitionException $e) {
@@ -32,7 +32,7 @@ class DocumentWorkflowController extends Controller
         Gate::authorize('publish', $document);
 
         try {
-            $this->workflowService->publish($document);
+            $this->workflowService->publish($document->currentVersion);
 
             return back()->with('success', 'Document published successfully.');
         } catch (InvalidDocumentTransitionException $e) {
@@ -45,7 +45,7 @@ class DocumentWorkflowController extends Controller
         Gate::authorize('reject', $document);
 
         try {
-            $this->workflowService->reject($document);
+            $this->workflowService->reject($document->currentVersion);
 
             return back()->with('success', 'Document rejected and returned to draft.');
         } catch (InvalidDocumentTransitionException $e) {
@@ -58,7 +58,7 @@ class DocumentWorkflowController extends Controller
         Gate::authorize('archive', $document);
 
         try {
-            $this->workflowService->archive($document);
+            $this->workflowService->archive($document->currentVersion);
 
             return back()->with('success', 'Document archived successfully.');
         } catch (InvalidDocumentTransitionException $e) {

@@ -40,7 +40,7 @@ test('document creation logs activity', function () {
 
     $document = Document::first();
 
-    $activity = Activity::forSubject($document)->where('event', 'document.created')->first();
+    $activity = Activity::forSubject($document->currentVersion)->where('event', 'document.created')->first();
     expect($activity)->not->toBeNull()
         ->and($activity->causer_id)->toBe($this->operator->id)
         ->and($activity->causer_type)->toBe(User::class);
@@ -57,13 +57,13 @@ test('document update logs activity with dirty properties', function () {
     $this->actingAs($this->operator)
         ->put(route('documents.update', $document), [
             'title' => 'New Title',
-            'description' => $document->description,
+            'description' => $document->currentVersion->description,
             'category_id' => $document->category_id,
             'priority' => $document->priority->value,
         ])
         ->assertRedirect();
 
-    $activity = Activity::forSubject($document)->where('event', 'document.updated')->first();
+    $activity = Activity::forSubject($document->currentVersion)->where('event', 'document.updated')->first();
 
     expect($activity)->not->toBeNull()
         ->and($activity->properties->toArray())->toHaveKey('title', 'New Title');
@@ -82,17 +82,17 @@ test('attachment upload and delete logs activity', function () {
         ->post(route('documents.attachments.store', $document), ['file' => $file])
         ->assertRedirect();
 
-    $activityUpload = Activity::forSubject($document)->where('event', 'attachment.uploaded')->first();
+    $activityUpload = Activity::forSubject($document->currentVersion)->where('event', 'attachment.uploaded')->first();
     expect($activityUpload)->not->toBeNull()
         ->and($activityUpload->properties['filename'])->toBe('test.pdf');
 
-    $media = $document->getMedia('attachments')->first();
+    $media = $document->currentVersion->getMedia('attachments')->first();
 
     $this->actingAs($this->operator)
         ->delete(route('documents.attachments.destroy', [$document, $media]))
         ->assertRedirect();
 
-    $activityDelete = Activity::forSubject($document)->where('event', 'attachment.deleted')->first();
+    $activityDelete = Activity::forSubject($document->currentVersion)->where('event', 'attachment.deleted')->first();
     expect($activityDelete)->not->toBeNull()
         ->and($activityDelete->properties['filename'])->toBe('test.pdf');
 });
@@ -108,7 +108,7 @@ test('workflow transition logs activity', function () {
         ->post(route('documents.workflow.submitForReview', $document))
         ->assertRedirect();
 
-    $activity = Activity::forSubject($document)->where('event', 'workflow.transition')->first();
+    $activity = Activity::forSubject($document->currentVersion)->where('event', 'workflow.transition')->first();
 
     expect($activity)->not->toBeNull()
         ->and($activity->properties['from_state'])->toBe(DocumentStateName::Draft->value)
@@ -123,7 +123,7 @@ test('admin can see audit trail but operator cannot', function () {
     ]);
 
     // Create dummy activity
-    activity()->causedBy($this->operator)->performedOn($document)->event('document.created')->log('created');
+    activity()->causedBy($this->operator)->performedOn($document->currentVersion)->event('document.created')->log('created');
 
     $this->actingAs($this->operator)
         ->get(route('documents.show', $document))

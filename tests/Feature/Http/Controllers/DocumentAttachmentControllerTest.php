@@ -9,9 +9,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
-    $this->adminRole = Role::firstOrCreate(['name' => \App\Enums\Role::Administrator->value]);
-    $this->operatorRole = Role::firstOrCreate(['name' => \App\Enums\Role::Operator->value]);
-    $this->viewerRole = Role::firstOrCreate(['name' => \App\Enums\Role::Viewer->value]);
+    $this->adminRole = Role::firstOrCreate(['name' => App\Enums\Role::Administrator->value]);
+    $this->operatorRole = Role::firstOrCreate(['name' => App\Enums\Role::Operator->value]);
+    $this->viewerRole = Role::firstOrCreate(['name' => App\Enums\Role::Viewer->value]);
 
     $this->admin = User::factory()->create(['role_id' => $this->adminRole->id]);
     $this->operator = User::factory()->create(['role_id' => $this->operatorRole->id]);
@@ -37,9 +37,9 @@ test('operator can upload valid attachment', function () {
         ->post(route('documents.attachments.store', $document), ['file' => $file])
         ->assertRedirect();
 
-    expect($document->getMedia('attachments'))->toHaveCount(1);
+    expect($document->currentVersion->getMedia('attachments'))->toHaveCount(1);
 
-    $media = $document->getMedia('attachments')->first();
+    $media = $document->currentVersion->getMedia('attachments')->first();
     expect($media->file_name)->toBe('document.pdf');
 });
 
@@ -56,7 +56,7 @@ test('viewer cannot upload attachment', function () {
         ->post(route('documents.attachments.store', $document), ['file' => $file])
         ->assertForbidden();
 
-    expect($document->getMedia('attachments'))->toHaveCount(0);
+    expect($document->currentVersion->getMedia('attachments'))->toHaveCount(0);
 });
 
 test('cannot upload attachment to archived document', function () {
@@ -86,7 +86,7 @@ test('cannot upload invalid file type', function () {
         ->post(route('documents.attachments.store', $document), ['file' => $file])
         ->assertSessionHasErrors('file');
 
-    expect($document->getMedia('attachments'))->toHaveCount(0);
+    expect($document->currentVersion->getMedia('attachments'))->toHaveCount(0);
 });
 
 test('authorized user can download attachment', function () {
@@ -97,8 +97,8 @@ test('authorized user can download attachment', function () {
     ]);
 
     $file = UploadedFile::fake()->create('test.pdf', 1024, 'application/pdf');
-    $document->addMedia($file)->toMediaCollection('attachments');
-    $media = $document->getMedia('attachments')->first();
+    $document->currentVersion->addMedia($file)->toMediaCollection('attachments');
+    $media = $document->currentVersion->getMedia('attachments')->first();
 
     $this->actingAs($this->viewer)
         ->get(route('documents.attachments.download', [$document, $media]))
@@ -110,8 +110,8 @@ test('cannot access attachment belonging to another document', function () {
     $doc2 = Document::factory()->create(['category_id' => $this->category->id, 'document_state_id' => $this->state->id]);
 
     $file = UploadedFile::fake()->create('test.pdf', 1024, 'application/pdf');
-    $doc1->addMedia($file)->toMediaCollection('attachments');
-    $media = $doc1->getMedia('attachments')->first();
+    $doc1->currentVersion->addMedia($file)->toMediaCollection('attachments');
+    $media = $doc1->currentVersion->getMedia('attachments')->first();
 
     // Try to access doc1's media through doc2's route
     $this->actingAs($this->admin)
@@ -131,14 +131,14 @@ test('authorized user can delete attachment', function () {
     ]);
 
     $file = UploadedFile::fake()->create('test.pdf', 1024, 'application/pdf');
-    $document->addMedia($file)->toMediaCollection('attachments');
-    $media = $document->getMedia('attachments')->first();
+    $document->currentVersion->addMedia($file)->toMediaCollection('attachments');
+    $media = $document->currentVersion->getMedia('attachments')->first();
 
     $this->actingAs($this->operator)
         ->delete(route('documents.attachments.destroy', [$document, $media]))
         ->assertRedirect();
 
-    expect($document->refresh()->getMedia('attachments'))->toHaveCount(0);
+    expect($document->refresh()->currentVersion->getMedia('attachments'))->toHaveCount(0);
 });
 
 test('maximum of 5 attachments enforced', function () {
@@ -151,7 +151,7 @@ test('maximum of 5 attachments enforced', function () {
     // Add 5 fake media items
     for ($i = 0; $i < 5; $i++) {
         $file = UploadedFile::fake()->create("test{$i}.pdf", 100, 'application/pdf');
-        $document->addMedia($file)->toMediaCollection('attachments');
+        $document->currentVersion->addMedia($file)->toMediaCollection('attachments');
     }
 
     // Attempt to add 6th
@@ -161,5 +161,5 @@ test('maximum of 5 attachments enforced', function () {
         ->post(route('documents.attachments.store', $document), ['file' => $file6])
         ->assertSessionHasErrors('file');
 
-    expect($document->refresh()->getMedia('attachments'))->toHaveCount(5);
+    expect($document->refresh()->currentVersion->getMedia('attachments'))->toHaveCount(5);
 });

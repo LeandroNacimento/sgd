@@ -32,8 +32,9 @@ class DashboardService
     private function getDocumentsByState(): array
     {
         $states = DocumentState::all();
-        $counts = Document::select('document_state_id', DB::raw('count(*) as total'))
-            ->groupBy('document_state_id')
+        $counts = Document::join('document_versions', 'documents.current_version_id', '=', 'document_versions.id')
+            ->select('document_versions.document_state_id', DB::raw('count(*) as total'))
+            ->groupBy('document_versions.document_state_id')
             ->pluck('total', 'document_state_id')
             ->toArray();
 
@@ -77,7 +78,7 @@ class DashboardService
 
     private function getRecentDocuments(int $limit = 5)
     {
-        return Document::with(['category', 'documentState', 'responsibleUser'])
+        return Document::with(['category', 'currentVersion.documentState', 'responsibleUser'])
             ->latest()
             ->take($limit)
             ->get();
@@ -90,8 +91,10 @@ class DashboardService
             return collect();
         }
 
-        return Document::with(['category', 'documentState', 'responsibleUser'])
-            ->where('document_state_id', $state->id)
+        return Document::with(['category', 'currentVersion.documentState', 'responsibleUser'])
+            ->whereHas('currentVersion', function ($query) use ($state) {
+                $query->where('document_state_id', $state->id);
+            })
             ->latest()
             ->take($limit)
             ->get();
@@ -104,8 +107,10 @@ class DashboardService
             return collect();
         }
 
-        return Document::with(['category', 'documentState', 'responsibleUser'])
-            ->where('document_state_id', $state->id)
+        return Document::with(['category', 'currentVersion.documentState', 'responsibleUser'])
+            ->whereHas('currentVersion', function ($query) use ($state) {
+                $query->where('document_state_id', $state->id);
+            })
             ->latest()
             ->take($limit)
             ->get();
