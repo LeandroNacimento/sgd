@@ -28,7 +28,7 @@ The application follows a layered architecture based on Laravel best practices, 
 ### Infrastructure Layer
 
 - Database (MySQL 8.x via Eloquent)
-- File storage (`spatie/laravel-medialibrary`)
+- File storage (`spatie/laravel-medialibrary` configurable via `MEDIA_DISK` for `local` or `azure`. Azure Blob containers must be private, with downloads served through Laravel to preserve the authorization model.)
 - Audit Logging (`spatie/laravel-activitylog` via `SpatieAuditLogger`)
 
 ---
