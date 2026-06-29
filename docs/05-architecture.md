@@ -17,6 +17,8 @@ The application follows a layered architecture based on Laravel best practices, 
 ### Application Layer
 
 - Services (e.g., `DocumentService`, `DocumentWorkflowService`, `DashboardService`)
+- Laravel Scout (Database engine)
+- Azure AI Document Intelligence (for OCR / text extraction)
 - Contracts / Interfaces (e.g., `AuditLoggerInterface`)
 - DTOs (if needed)
 
@@ -39,7 +41,16 @@ The application follows a layered architecture based on Laravel best practices, 
 2. **Route** forwards to **Controller**.
 3. **Form Request** validates data and authorizes (or **Gate/Policy** in Controller).
 4. **Controller** calls **Service** with validated data.
-5. **Service** executes business logic, calls **Models** (Database), and fires **Audit Logger**.
+5. **Hybrid Search (Laravel Scout + Azure AI Document Intelligence)**
+   - **Search Engine:** Laravel Scout configured with the `database` engine.
+   - **Traits:** The `Searchable` trait is applied to the `Document` model. The `toSearchableArray` method aggregates metadata such as `code`, and delegates to its `currentVersion` for `title`, `description`, and `extracted_text`.
+   - **OCR Integration:**
+     - When attachments are uploaded to a `DocumentVersion`, an asynchronous `ProcessDocumentOcrJob` is dispatched to the background queue.
+     - This job downloads the file stream from the underlying disk (Local or Azure Blob Storage) and submits it to Azure AI Document Intelligence (`prebuilt-read` endpoint) via the REST API.
+     - The job polls Azure until text is returned, then saves the extracted content into the `extracted_text` column of the `document_versions` table.
+     - Saving the model triggers Laravel Scout to re-index the data.
+   - **Query Integration:** The `Document::scopeFilter` uses Scout's `keys()` method (`Document::search($term)->keys()`) to retrieve matching Document IDs, injecting them into the Eloquent query with a `whereIn` clause. This allows seamlessly blending Scout's full-text matching with existing Eloquent filtering criteria without breaking pagination or REST endpoints.
+6. **Service** executes business logic, calls **Models** (Database), and fires **Audit Logger**.
 6. **Controller** returns response/view.
 
 ---
