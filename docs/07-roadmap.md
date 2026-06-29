@@ -47,6 +47,6 @@
 - **M13**: Document Versioning
 - **M14**: Notifications (Events, Listeners, Queues)
 - **M15**: REST API (Sanctum + Resources + OpenAPI)
-- **M16**: Azure Blob Storage
+- **M16**: Azure Blob Storage (Completed)
 - **M17**: Full-Text Search / OCR
 - **M18**: Background Jobs & Asynchronous Processing

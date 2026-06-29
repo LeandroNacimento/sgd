@@ -40,7 +40,11 @@ class DocumentAttachmentController extends Controller
             abort(404);
         }
 
-        return response()->download($media->getPath(), $media->file_name);
+        return response()->streamDownload(function () use ($media) {
+            fpassthru($media->stream());
+        }, $media->file_name, [
+            'Content-Type' => $media->mime_type,
+        ]);
     }
 
     public function destroy(Document $document, Media $media)

@@ -9,7 +9,7 @@ use App\Services\DocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentAttachmentController extends Controller
 {
@@ -41,7 +41,7 @@ class DocumentAttachmentController extends Controller
         return back()->with('success', __('documents.flash_attachment_deleted'));
     }
 
-    public function download(Document $document, Media $media): BinaryFileResponse
+    public function download(Document $document, Media $media): StreamedResponse
     {
         Gate::authorize('view', $document);
 
@@ -49,6 +49,10 @@ class DocumentAttachmentController extends Controller
             abort(404);
         }
 
-        return response()->download($media->getPath(), $media->file_name);
+        return response()->streamDownload(function () use ($media) {
+            fpassthru($media->stream());
+        }, $media->file_name, [
+            'Content-Type' => $media->mime_type,
+        ]);
     }
 }

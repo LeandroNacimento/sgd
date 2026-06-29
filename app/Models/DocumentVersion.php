@@ -72,6 +72,6 @@ class DocumentVersion extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('attachments')
-            ->useDisk('local'); // Force private storage
+            ->useDisk(config('filesystems.media_disk')); // Use configurable storage
     }
 }
