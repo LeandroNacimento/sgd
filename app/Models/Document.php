@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
 class Document extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Searchable;
 
     public ?string $_temp_title = null;
 
@@ -71,15 +72,25 @@ class Document extends Model
         return $this->belongsTo(DocumentVersion::class, 'current_version_id');
     }
 
+    public function toSearchableArray(): array
+    {
+        $array = [
+            'code' => $this->code,
+        ];
+
+        if ($this->currentVersion) {
+            $array['title'] = $this->currentVersion->title;
+            $array['description'] = $this->currentVersion->description;
+            $array['extracted_text'] = $this->currentVersion->extracted_text;
+        }
+
+        return $array;
+    }
+
     public function scopeFilter(Builder $query, array $filters): void
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%{$search}%")
-                    ->orWhereHas('currentVersion', function ($q2) use ($search) {
-                        $q2->where('title', 'like', "%{$search}%");
-                    });
-            });
+            $query->whereIn('id', self::search($search)->keys());
         })
             ->when($filters['category_id'] ?? null, function ($query, $categoryId) {
                 $query->where('category_id', $categoryId);

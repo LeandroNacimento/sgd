@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'azure' => [
+        'ocr_endpoint' => env('AZURE_OCR_ENDPOINT'),
+        'ocr_key' => env('AZURE_OCR_KEY'),
+    ],
+
 ];

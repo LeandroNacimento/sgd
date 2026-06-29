@@ -114,6 +114,8 @@ class DocumentService
         if (auth()->check()) {
             $this->auditLogger->logAttachmentUploaded($version, auth()->user(), $media->file_name);
         }
+
+        \App\Jobs\ProcessDocumentOcrJob::dispatch($version, $media);
     }
 
     public function removeAttachment(Document $document, Media $media): void
