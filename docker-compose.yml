@@ -10,6 +10,11 @@ services:
       - ./:/var/www/html
     ports:
       - "5173:5173"
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_started
     networks:
       - sgd
 
@@ -41,9 +46,61 @@ services:
     networks:
       - sgd
 
+  redis:
+    image: redis:alpine
+    container_name: sgd-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - sgd-redis-data:/data
+    networks:
+      - sgd
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sgd-queue
+    restart: unless-stopped
+    command: php artisan horizon
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_started
+    networks:
+      - sgd
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sgd-scheduler
+    restart: unless-stopped
+    command: >
+      sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_started
+    networks:
+      - sgd
+
 networks:
   sgd:
     driver: bridge
 
 volumes:
   sgd-db-data:
+  sgd-redis-data:
