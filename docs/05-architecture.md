@@ -30,6 +30,8 @@ The application follows a layered architecture based on Laravel best practices, 
 ### Infrastructure Layer
 
 - Database (MySQL 8.x via Eloquent)
+- Cache & Queue Broker (Redis)
+- Background Jobs (Laravel Horizon with dedicated worker containers)
 - File storage (`spatie/laravel-medialibrary` configurable via `MEDIA_DISK` for `local` or `azure`. Azure Blob containers must be private, with downloads served through Laravel to preserve the authorization model.)
 - Audit Logging (`spatie/laravel-activitylog` via `SpatieAuditLogger`)
 
@@ -45,13 +47,14 @@ The application follows a layered architecture based on Laravel best practices, 
    - **Search Engine:** Laravel Scout configured with the `database` engine.
    - **Traits:** The `Searchable` trait is applied to the `Document` model. The `toSearchableArray` method aggregates metadata such as `code`, and delegates to its `currentVersion` for `title`, `description`, and `extracted_text`.
    - **OCR Integration:**
-     - When attachments are uploaded to a `DocumentVersion`, an asynchronous `ProcessDocumentOcrJob` is dispatched to the background queue.
+     - When attachments are uploaded to a `DocumentVersion`, an asynchronous `ProcessDocumentOcrJob` is dispatched to the background queue (specifically, the `ocr` queue).
+     - The background job is processed by a dedicated worker running Laravel Horizon via Redis.
      - This job downloads the file stream from the underlying disk (Local or Azure Blob Storage) and submits it to Azure AI Document Intelligence (`prebuilt-read` endpoint) via the REST API.
      - The job polls Azure until text is returned, then saves the extracted content into the `extracted_text` column of the `document_versions` table.
      - Saving the model triggers Laravel Scout to re-index the data.
    - **Query Integration:** The `Document::scopeFilter` uses Scout's `keys()` method (`Document::search($term)->keys()`) to retrieve matching Document IDs, injecting them into the Eloquent query with a `whereIn` clause. This allows seamlessly blending Scout's full-text matching with existing Eloquent filtering criteria without breaking pagination or REST endpoints.
 6. **Service** executes business logic, calls **Models** (Database), and fires **Audit Logger**.
-6. **Controller** returns response/view.
+7. **Controller** returns response/view.
 
 ---
 

@@ -14,7 +14,8 @@ class ProcessDocumentOcrJob implements ShouldQueue
     use Queueable;
 
     public $tries = 3;
-    public $timeout = 120;
+    public $timeout = 300; // 5 minutes for OCR
+    public $queue = 'ocr';
 
     public function __construct(
         public DocumentVersion $documentVersion,
@@ -41,14 +42,12 @@ class ProcessDocumentOcrJob implements ShouldQueue
         ]);
 
         if (!$response->successful()) {
-            $this->fail(new \Exception('Azure OCR Submission Failed: ' . $response->body()));
-            return;
+            throw new \Exception('Azure OCR Submission Failed: ' . $response->body());
         }
 
         $operationLocation = $response->header('Operation-Location');
         if (!$operationLocation) {
-            $this->fail(new \Exception('No Operation-Location header received from Azure.'));
-            return;
+            throw new \Exception('No Operation-Location header received from Azure.');
         }
 
         $attempts = 0;
@@ -71,12 +70,10 @@ class ProcessDocumentOcrJob implements ShouldQueue
                 }
 
                 if ($status === 'failed') {
-                    $this->fail(new \Exception('Azure OCR Processing Failed: ' . $resultResponse->body()));
-                    return;
+                    throw new \Exception('Azure OCR Processing Failed: ' . $resultResponse->body());
                 }
             } else {
-                $this->fail(new \Exception('Azure OCR Polling Failed: ' . $resultResponse->body()));
-                return;
+                throw new \Exception('Azure OCR Polling Failed: ' . $resultResponse->body());
             }
         }
 
