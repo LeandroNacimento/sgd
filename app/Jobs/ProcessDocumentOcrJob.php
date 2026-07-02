@@ -17,12 +17,12 @@ class ProcessDocumentOcrJob implements ShouldQueue
 
     public $timeout = 300; // 5 minutes for OCR
 
-    public $queue = 'ocr';
-
     public function __construct(
         public DocumentVersion $documentVersion,
         public Media $media
-    ) {}
+    ) {
+        $this->onQueue('ocr');
+    }
 
     public function handle(): void
     {

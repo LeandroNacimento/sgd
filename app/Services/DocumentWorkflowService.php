@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\AuditLoggerInterface;
 use App\Enums\DocumentStateName;
+use App\Events\DocumentStateChanged;
 use App\Exceptions\InvalidDocumentTransitionException;
 use App\Models\Document;
 use App\Models\DocumentState;
@@ -52,16 +53,18 @@ class DocumentWorkflowService
 
     private function transitionTo(Document $document, DocumentStateName $stateName): void
     {
-        $oldStateName = $document->documentState->name;
+        $oldStateName = $document->currentVersion->documentState->name;
 
         $state = DocumentState::where('name', $stateName->value)->firstOrFail();
 
-        $document->update([
+        $document->currentVersion->update([
             'document_state_id' => $state->id,
         ]);
 
         if (auth()->check()) {
-            $this->auditLogger->logWorkflowTransition($document, auth()->user(), $oldStateName, $stateName->value);
+            $this->auditLogger->logWorkflowTransition($document->currentVersion, auth()->user(), $oldStateName, $stateName->value);
         }
+
+        DocumentStateChanged::dispatch($document, $oldStateName, $stateName->value);
     }
 }

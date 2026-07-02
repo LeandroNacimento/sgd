@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\AuditLoggerInterface;
 use App\Enums\DocumentStateName;
+use App\Events\DocumentAssigned;
 use App\Jobs\ProcessDocumentOcrJob;
 use App\Models\Document;
 use App\Models\DocumentState;
@@ -46,6 +47,8 @@ class DocumentService
             if (auth()->check()) {
                 $this->auditLogger->logDocumentCreated($version, auth()->user());
             }
+
+            DocumentAssigned::dispatch($document, null);
 
             return $document;
         });

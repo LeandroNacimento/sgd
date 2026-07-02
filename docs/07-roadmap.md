@@ -45,7 +45,7 @@
 ## Phase 4 - Enterprise Enhancements (Upcoming)
 
 - **M19**: Document Versioning (Completed)
-- **M14**: Notifications (Events, Listeners, Queues)
+- **M20**: Notifications (Events, Listeners, Queues) (Completed)
 - **M15**: REST API (Sanctum + Resources + OpenAPI)
 - **M16**: Azure Blob Storage (Completed)
 - **M17**: Hybrid Search over document metadata and OCR extracted content (Completed)
