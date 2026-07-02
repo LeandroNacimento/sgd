@@ -7,7 +7,6 @@ use App\Http\Requests\StoreDocumentAttachmentRequest;
 use App\Http\Resources\MediaResource;
 use App\Models\Document;
 use App\Models\DocumentVersion;
-use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class DocumentAttachmentController extends Controller
@@ -24,7 +23,7 @@ class DocumentAttachmentController extends Controller
         $this->authorize('update', $document);
 
         $file = $request->file('file');
-        
+
         $media = $document->currentVersion->addMedia($file)
             ->toMediaCollection('attachments');
 
@@ -35,8 +34,8 @@ class DocumentAttachmentController extends Controller
     {
         $this->authorize('view', $document);
 
-        if ($media->model_type !== DocumentVersion::class || 
-            !in_array($media->model_id, $document->versions()->pluck('id')->toArray())) {
+        if ($media->model_type !== DocumentVersion::class ||
+            ! in_array($media->model_id, $document->versions()->pluck('id')->toArray())) {
             abort(404);
         }
 

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DocumentResource;
 use App\Models\Document;
-use App\Services\DocumentWorkflowService;
 use App\Services\DocumentVersionService;
+use App\Services\DocumentWorkflowService;
 use Illuminate\Http\Request;
 
 class DocumentWorkflowController extends Controller
@@ -20,6 +20,7 @@ class DocumentWorkflowController extends Controller
     {
         $this->authorize('submit', $document);
         $this->workflowService->submitForReview($document);
+
         return new DocumentResource($document->refresh());
     }
 
@@ -27,6 +28,7 @@ class DocumentWorkflowController extends Controller
     {
         $this->authorize('publish', $document);
         $this->workflowService->publish($document);
+
         return new DocumentResource($document->refresh());
     }
 
@@ -34,6 +36,7 @@ class DocumentWorkflowController extends Controller
     {
         $this->authorize('reject', $document);
         $this->workflowService->reject($document);
+
         return new DocumentResource($document->refresh());
     }
 
@@ -41,6 +44,7 @@ class DocumentWorkflowController extends Controller
     {
         $this->authorize('archive', $document);
         $this->workflowService->archive($document);
+
         return new DocumentResource($document->refresh());
     }
 
@@ -48,6 +52,7 @@ class DocumentWorkflowController extends Controller
     {
         $this->authorize('createNewVersion', $document);
         $this->versionService->createNewVersion($document);
+
         return new DocumentResource($document->refresh());
     }
 }

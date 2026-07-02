@@ -86,4 +86,14 @@ class DocumentPolicy
     {
         return $user->can('is-admin') && $document->isPublished();
     }
+
+    public function createVersion(User $user, Document $document): bool
+    {
+        return $user->can('is-operator') && $document->isPublished();
+    }
+
+    public function revertVersion(User $user, Document $document): bool
+    {
+        return $user->can('is-operator');
+    }
 }

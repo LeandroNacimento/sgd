@@ -68,4 +68,14 @@ class SpatieAuditLogger implements AuditLoggerInterface
             ])
             ->log("Workflow transitioned from {$fromState} to {$toState}");
     }
+
+    public function logDocumentReverted(DocumentVersion $version, User $user, int $revertedFromVersionNumber): void
+    {
+        activity()
+            ->causedBy($user)
+            ->performedOn($version)
+            ->event('document.reverted')
+            ->withProperties(['reverted_from_version_number' => $revertedFromVersionNumber])
+            ->log("Reverted from version v{$revertedFromVersionNumber}.0");
+    }
 }

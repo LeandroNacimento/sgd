@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\AuditLoggerInterface;
 use App\Enums\DocumentStateName;
+use App\Jobs\ProcessDocumentOcrJob;
 use App\Models\Document;
 use App\Models\DocumentState;
 use App\Models\DocumentVersion;
@@ -115,7 +116,7 @@ class DocumentService
             $this->auditLogger->logAttachmentUploaded($version, auth()->user(), $media->file_name);
         }
 
-        \App\Jobs\ProcessDocumentOcrJob::dispatch($version, $media);
+        ProcessDocumentOcrJob::dispatch($version, $media);
     }
 
     public function removeAttachment(Document $document, Media $media): void

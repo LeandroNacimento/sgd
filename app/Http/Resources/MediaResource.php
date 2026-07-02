@@ -18,7 +18,7 @@ class MediaResource extends JsonResource
             'created_at' => $this->created_at,
             'url' => route('api.v1.documents.attachments.download', [
                 'document' => $this->model_id,
-                'media' => $this->id
+                'media' => $this->id,
             ]),
         ];
     }

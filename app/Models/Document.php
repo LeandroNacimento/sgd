@@ -13,7 +13,7 @@ use Laravel\Scout\Searchable;
 
 class Document extends Model
 {
-    use HasFactory, SoftDeletes, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     public ?string $_temp_title = null;
 

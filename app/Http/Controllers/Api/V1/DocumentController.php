@@ -12,9 +12,7 @@ use App\Services\DocumentService;
 
 class DocumentController extends Controller
 {
-    public function __construct(private readonly DocumentService $documentService)
-    {
-    }
+    public function __construct(private readonly DocumentService $documentService) {}
 
     public function index(IndexDocumentRequest $request)
     {

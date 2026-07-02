@@ -14,6 +14,13 @@ return [
     'view_button' => 'View',
     'delete_button' => 'Delete',
 
+    // Flash messages
+    'flash_created' => 'Document created successfully.',
+    'flash_updated' => 'Document updated successfully.',
+    'flash_deleted' => 'Document deleted successfully.',
+    'flash_new_version' => 'New version created successfully.',
+    'flash_reverted' => 'Document reverted to the selected historical version successfully.',
+
     // Form fields
     'field_title' => 'Title',
     'field_description' => 'Description',
@@ -67,6 +74,7 @@ return [
     'version_view' => 'View',
     'version_notice' => 'Note: You are viewing a historical version (:version).',
     'version_view_current' => 'View Current Version',
+    'version_revert' => 'Revert to this version',
 
     // Workflow actions
     'workflow_submit_review' => 'Submit for Review',
@@ -83,6 +91,7 @@ return [
     'confirm_reject' => 'Reject and return to draft?',
     'confirm_archive' => 'Archive this document? It cannot be modified afterwards.',
     'confirm_new_version' => 'Create a new draft version?',
+    'confirm_revert' => 'Are you sure you want to revert to this historical version? This will create a new Draft version based on this historical data.',
     'confirm_delete' => 'Are you sure you want to delete this entire document and all its versions?',
     'confirm_delete_attachment' => 'Are you sure you want to remove this attachment?',
 

@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Document Versions
     Route::post('documents/{document}/versions', [DocumentVersionController::class, 'store'])->name('documents.versions.store');
+    Route::post('documents/{document}/versions/{version}/revert', [DocumentVersionController::class, 'revert'])->name('documents.versions.revert');
 
     // Document Attachments
     Route::post('documents/{document}/attachments', [DocumentAttachmentController::class, 'store'])->name('documents.attachments.store');

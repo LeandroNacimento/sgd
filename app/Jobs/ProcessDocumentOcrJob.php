@@ -14,7 +14,9 @@ class ProcessDocumentOcrJob implements ShouldQueue
     use Queueable;
 
     public $tries = 3;
+
     public $timeout = 300; // 5 minutes for OCR
+
     public $queue = 'ocr';
 
     public function __construct(
@@ -29,6 +31,7 @@ class ProcessDocumentOcrJob implements ShouldQueue
 
         if (empty($endpoint) || empty($key)) {
             Log::warning('Azure OCR config missing. Skipping OCR.');
+
             return;
         }
 
@@ -38,15 +41,15 @@ class ProcessDocumentOcrJob implements ShouldQueue
             'Ocp-Apim-Subscription-Key' => $key,
             'Content-Type' => 'application/octet-stream',
         ])->send('POST', $url, [
-            'body' => $this->media->stream()
+            'body' => $this->media->stream(),
         ]);
 
-        if (!$response->successful()) {
-            throw new \Exception('Azure OCR Submission Failed: ' . $response->body());
+        if (! $response->successful()) {
+            throw new \Exception('Azure OCR Submission Failed: '.$response->body());
         }
 
         $operationLocation = $response->header('Operation-Location');
-        if (!$operationLocation) {
+        if (! $operationLocation) {
             throw new \Exception('No Operation-Location header received from Azure.');
         }
 
@@ -70,22 +73,23 @@ class ProcessDocumentOcrJob implements ShouldQueue
                 }
 
                 if ($status === 'failed') {
-                    throw new \Exception('Azure OCR Processing Failed: ' . $resultResponse->body());
+                    throw new \Exception('Azure OCR Processing Failed: '.$resultResponse->body());
                 }
             } else {
-                throw new \Exception('Azure OCR Polling Failed: ' . $resultResponse->body());
+                throw new \Exception('Azure OCR Polling Failed: '.$resultResponse->body());
             }
         }
 
         if (empty($extractedText)) {
             Log::warning('OCR returned empty text or timed out', ['media_id' => $this->media->id]);
+
             return;
         }
 
         $version = DocumentVersion::find($this->documentVersion->id);
         if ($version) {
-            $currentText = $version->extracted_text ? $version->extracted_text . "\n\n" : '';
-            $version->extracted_text = $currentText . $extractedText;
+            $currentText = $version->extracted_text ? $version->extracted_text."\n\n" : '';
+            $version->extracted_text = $currentText.$extractedText;
             $version->save();
         }
     }

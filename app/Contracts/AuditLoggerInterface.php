@@ -18,4 +18,6 @@ interface AuditLoggerInterface
     public function logAttachmentDeleted(DocumentVersion $version, User $user, string $filename): void;
 
     public function logWorkflowTransition(DocumentVersion $version, User $user, string $fromState, string $toState): void;
+
+    public function logDocumentReverted(DocumentVersion $version, User $user, int $revertedFromVersionNumber): void;
 }

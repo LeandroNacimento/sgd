@@ -14,6 +14,5 @@ class TimelineItemData
         public ?string $description = null,
         public array $metadata = [], // e.g., ['state' => 'published', 'changes' => [...]]
         public ?string $url = null
-    ) {
-    }
+    ) {}
 }

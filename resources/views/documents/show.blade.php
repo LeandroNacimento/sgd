@@ -15,7 +15,7 @@
                 <x-ds.button href="{{ route('documents.edit', $document) }}" variant="secondary" size="sm">{{ __('documents.edit_button') }}</x-ds.button>
             @endcan
             @if($version->isPublished())
-                @can('update', $document)
+                @can('createVersion', $document)
                     <form action="{{ route('documents.versions.store', $document) }}" method="POST" class="inline-block" onsubmit="return confirm('{{ __('documents.confirm_new_version') }}');">
                         @csrf
                         <x-ds.button type="submit" variant="primary" size="sm">{{ __('documents.workflow_new_version') }}</x-ds.button>
@@ -96,6 +96,15 @@
                                         <a href="{{ route('documents.show', ['document' => $document, 'version_id' => $histVersion->id]) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ __('documents.version_view') }}</a>
                                     @else
                                         <span class="text-slate-400 cursor-default">{{ __('documents.version_viewing') }}</span>
+                                    @endif
+                                    
+                                    @if($document->current_version_id !== $histVersion->id)
+                                        @can('revertVersion', $document)
+                                            <form action="{{ route('documents.versions.revert', [$document, $histVersion]) }}" method="POST" class="inline-block border-l pl-4 border-slate-200" onsubmit="return confirm('{{ __('documents.confirm_revert') }}');">
+                                                @csrf
+                                                <button type="submit" class="text-amber-600 hover:text-amber-800 font-medium">{{ __('documents.version_revert') }}</button>
+                                            </form>
+                                        @endcan
                                     @endif
                                 </div>
                             </div>

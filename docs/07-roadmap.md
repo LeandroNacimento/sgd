@@ -44,7 +44,7 @@
 
 ## Phase 4 - Enterprise Enhancements (Upcoming)
 
-- **M13**: Document Versioning
+- **M19**: Document Versioning (Completed)
 - **M14**: Notifications (Events, Listeners, Queues)
 - **M15**: REST API (Sanctum + Resources + OpenAPI)
 - **M16**: Azure Blob Storage (Completed)
