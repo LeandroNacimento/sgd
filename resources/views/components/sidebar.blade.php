@@ -1,7 +1,7 @@
 <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out bg-white border-r border-slate-200">
     <div class="h-16 flex items-center px-6 border-b border-slate-200">
-        <a href="/" class="text-xl font-bold text-slate-900 tracking-tight">
-            {{ config('app.name', 'Laravel') }}
+        <a href="/" class="flex items-center gap-2">
+            <img src="{{ asset('img/nexusdocs-logo.svg') }}" alt="{{ config('app.name', 'NexusDocs') }}" class="h-8 w-auto object-contain" />
         </a>
     </div>
 
