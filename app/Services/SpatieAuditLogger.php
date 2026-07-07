@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Contracts\AuditLoggerInterface;
+use App\Models\Document;
 use App\Models\DocumentVersion;
 use App\Models\User;
+use Spatie\Activitylog\Models\Activity;
 
 class SpatieAuditLogger implements AuditLoggerInterface
 {
@@ -77,5 +79,40 @@ class SpatieAuditLogger implements AuditLoggerInterface
             ->event('document.reverted')
             ->withProperties(['reverted_from_version_number' => $revertedFromVersionNumber])
             ->log("Reverted from version v{$revertedFromVersionNumber}.0");
+    }
+
+    public function getDocumentTimeline(Document $document)
+    {
+        $versionIds = $document->versions()->pluck('id');
+
+        return Activity::where('subject_type', DocumentVersion::class)
+            ->whereIn('subject_id', $versionIds)
+            ->with('causer')
+            ->latest()
+            ->get();
+    }
+
+    public function logUserLogin(User $user): void
+    {
+        activity()
+            ->causedBy($user)
+            ->event('user.login')
+            ->log('User logged in');
+    }
+
+    public function logUserLogout(User $user): void
+    {
+        activity()
+            ->causedBy($user)
+            ->event('user.logout')
+            ->log('User logged out');
+    }
+
+    public function logFailedLogin(string $email): void
+    {
+        activity()
+            ->event('user.failed_login')
+            ->withProperties(['email' => $email])
+            ->log('Failed login attempt');
     }
 }

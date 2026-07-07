@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Contracts\AuditLoggerInterface;
+use App\Listeners\LogUserAuthentication;
 use App\Services\SpatieAuditLogger;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Event::subscribe(LogUserAuthentication::class);
     }
 }

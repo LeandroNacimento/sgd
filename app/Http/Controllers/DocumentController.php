@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\AuditLoggerInterface;
+use App\DTOs\TimelineItemData;
 use App\Enums\DocumentPriority;
+use App\Enums\DocumentStateName;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
@@ -18,7 +21,8 @@ use Spatie\Activitylog\Models\Activity;
 class DocumentController extends Controller
 {
     public function __construct(
-        private readonly DocumentService $documentService
+        private readonly DocumentService $documentService,
+        private readonly AuditLoggerInterface $auditLogger
     ) {}
 
     public function index(IndexDocumentRequest $request): View
@@ -70,15 +74,59 @@ class DocumentController extends Controller
             ? $document->versions()->findOrFail($versionId)
             : $document->currentVersion;
 
-        $activities = [];
-        if (auth()->user()->can('is-admin')) {
-            $activities = Activity::forSubject($version)
-                ->with('causer')
-                ->latest()
-                ->get();
+        $activities = $this->auditLogger->getDocumentTimeline($document);
+
+        $timelineItems = $activities->map(function ($activity) {
+            return $this->mapActivityToTimelineItemData($activity);
+        });
+
+        return view('documents.show', compact('document', 'version', 'timelineItems'));
+    }
+
+    private function mapActivityToTimelineItemData(Activity $activity): TimelineItemData
+    {
+        $metadata = [];
+
+        $title = match ($activity->event) {
+            'document.created' => __('documents.audit_event_created'),
+            'document.updated' => __('documents.audit_event_updated'),
+            'document.deleted' => __('documents.audit_event_deleted'),
+            'attachment.uploaded' => __('documents.audit_event_attachment_uploaded', ['filename' => $activity->properties['filename'] ?? '']),
+            'attachment.deleted' => __('documents.audit_event_attachment_deleted', ['filename' => $activity->properties['filename'] ?? '']),
+            'workflow.transition' => __('documents.audit_event_workflow_transition'),
+            default => $activity->description
+        };
+
+        if ($activity->event === 'document.updated' && $activity->properties->count() > 0) {
+            $changes = [];
+            foreach ($activity->properties as $key => $value) {
+                $changes[] = __('documents.audit_field_updated', ['field' => ucfirst($key)]);
+            }
+            $metadata[__('documents.audit_changes')] = $changes;
         }
 
-        return view('documents.show', compact('document', 'version', 'activities'));
+        if ($activity->event === 'workflow.transition') {
+            $fromKey = $activity->properties['from_state'] ?? '?';
+            $toKey = $activity->properties['to_state'] ?? '?';
+
+            $from = DocumentStateName::tryFrom($fromKey)?->label() ?? $fromKey;
+            $to = DocumentStateName::tryFrom($toKey)?->label() ?? $toKey;
+
+            $metadata['transition'] = __('documents.audit_transition', [
+                'from' => $from,
+                'to' => $to,
+            ]);
+        }
+
+        return new TimelineItemData(
+            type: 'audit',
+            title: $title,
+            timestamp: $activity->created_at,
+            actor: $activity->causer->name ?? __('documents.audit_causer'),
+            description: null,
+            metadata: $metadata,
+            url: null
+        );
     }
 
     public function edit(Document $document): View

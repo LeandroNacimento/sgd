@@ -7,6 +7,7 @@ use App\Http\Controllers\DocumentVersionController;
 use App\Http\Controllers\DocumentWorkflowController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SystemAuditController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -45,7 +46,7 @@ Route::middleware('auth')->group(function () {
 
 // Administrator-only routes
 Route::middleware(['auth', 'can:is-admin'])->group(function () {
-    // Routes added in future phases
+    Route::get('/audit-logs', [SystemAuditController::class, 'index'])->name('audit-logs.index');
 });
 
 // Operator and Administrator routes

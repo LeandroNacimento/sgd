@@ -50,3 +50,4 @@
 - **M16**: Azure Blob Storage (Completed)
 - **M17**: Hybrid Search over document metadata and OCR extracted content (Completed)
 - **M18**: Background Jobs & Asynchronous Processing (Completed)
+- **M21**: Comprehensive Audit Logging System
