@@ -15,7 +15,7 @@ class DocumentVersionResource extends JsonResource
             'semantic_version' => $this->semantic_version,
             'title' => $this->title,
             'description' => $this->description,
-            'state' => $this->documentState->name->label(),
+            'state' => $this->stateLabel(),
             'created_at' => $this->created_at,
         ];
     }

@@ -51,4 +51,5 @@
 - **M17**: Hybrid Search over document metadata and OCR extracted content (Completed)
 - **M18**: Background Jobs & Asynchronous Processing (Completed)
 - **M21**: Comprehensive Audit Logging System (Completed)
-- **M23**: Security Hardening (In Progress)
+- **M23**: Security Hardening (Completed)
+- **M24**: Performance & Scalability (Completed)
