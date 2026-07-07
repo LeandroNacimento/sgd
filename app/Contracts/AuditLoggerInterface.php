@@ -2,8 +2,10 @@
 
 namespace App\Contracts;
 
+use App\Models\Document;
 use App\Models\DocumentVersion;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 
 interface AuditLoggerInterface
 {
@@ -20,4 +22,17 @@ interface AuditLoggerInterface
     public function logWorkflowTransition(DocumentVersion $version, User $user, string $fromState, string $toState): void;
 
     public function logDocumentReverted(DocumentVersion $version, User $user, int $revertedFromVersionNumber): void;
+
+    /**
+     * Get the full timeline of activities for all versions of a document.
+     *
+     * @return Collection
+     */
+    public function getDocumentTimeline(Document $document);
+
+    public function logUserLogin(User $user): void;
+
+    public function logUserLogout(User $user): void;
+
+    public function logFailedLogin(string $email): void;
 }

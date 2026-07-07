@@ -172,58 +172,12 @@
                 @endif
             </x-ds.card>
 
-            @if(auth()->user()->can('is-admin') && isset($activities) && $activities->count() > 0)
+            @if(isset($timelineItems) && $timelineItems->count() > 0)
                 <x-ds.card>
                     <x-slot name="header">
-                        <h2 class="text-lg font-semibold text-slate-900">{{ __('documents.audit_trail') }} ({{ $version->semantic_version }})</h2>
+                        <h2 class="text-lg font-semibold text-slate-900">{{ __('documents.audit_trail') }}</h2>
                     </x-slot>
                     
-                    @php
-                        $timelineItems = $activities->map(function($activity) {
-                            $metadata = [];
-                            
-                            $title = match($activity->event) {
-                                'document.created' => __('documents.audit_event_created'),
-                                'document.updated' => __('documents.audit_event_updated'),
-                                'document.deleted' => __('documents.audit_event_deleted'),
-                                'attachment.uploaded' => __('documents.audit_event_attachment_uploaded', ['filename' => $activity->properties['filename'] ?? '']),
-                                'attachment.deleted' => __('documents.audit_event_attachment_deleted', ['filename' => $activity->properties['filename'] ?? '']),
-                                'workflow.transition' => __('documents.audit_event_workflow_transition'),
-                                default => $activity->description
-                            };
-                            
-                            if($activity->event === 'document.updated' && $activity->properties->count() > 0) {
-                                $changes = [];
-                                foreach($activity->properties as $key => $value) {
-                                    $changes[] = __('documents.audit_field_updated', ['field' => ucfirst($key)]);
-                                }
-                                $metadata[__('documents.audit_changes')] = $changes;
-                            }
-                            
-                            if($activity->event === 'workflow.transition') {
-                                $fromKey = $activity->properties['from_state'] ?? '?';
-                                $toKey = $activity->properties['to_state'] ?? '?';
-                                
-                                $from = App\Enums\DocumentStateName::tryFrom($fromKey)?->label() ?? $fromKey;
-                                $to = App\Enums\DocumentStateName::tryFrom($toKey)?->label() ?? $toKey;
-
-                                $metadata['transition'] = __('documents.audit_transition', [
-                                    'from' => $from,
-                                    'to'   => $to,
-                                ]);
-                            }
-
-                            return new \App\DTOs\TimelineItemData(
-                                type: 'audit',
-                                title: $title,
-                                timestamp: $activity->created_at,
-                                actor: $activity->causer->name ?? __('documents.audit_causer'),
-                                description: null,
-                                metadata: $metadata,
-                                url: null
-                            );
-                        });
-                    @endphp
                     <x-ds.timeline :items="$timelineItems" />
                 </x-ds.card>
             @endif
