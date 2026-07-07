@@ -6,6 +6,7 @@ use App\Enums\DocumentStateName;
 use App\Models\Category;
 use App\Models\Document;
 use App\Models\DocumentState;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
 
@@ -26,46 +27,52 @@ class DashboardService
 
     private function getTotalDocuments(): int
     {
-        return Document::count();
+        return Cache::remember('dashboard.stats.total_documents', 900, function () {
+            return Document::count();
+        });
     }
 
     private function getDocumentsByState(): array
     {
-        $states = DocumentState::all();
-        $counts = Document::join('document_versions', 'documents.current_version_id', '=', 'document_versions.id')
-            ->select('document_versions.document_state_id', DB::raw('count(*) as total'))
-            ->groupBy('document_versions.document_state_id')
-            ->pluck('total', 'document_state_id')
-            ->toArray();
+        return Cache::remember('dashboard.stats.documents_by_state', 900, function () {
+            $states = DocumentState::getCachedAll();
+            $counts = Document::join('document_versions', 'documents.current_version_id', '=', 'document_versions.id')
+                ->select('document_versions.document_state_id', DB::raw('count(*) as total'))
+                ->groupBy('document_versions.document_state_id')
+                ->pluck('total', 'document_state_id')
+                ->toArray();
 
-        $result = [];
-        foreach ($states as $state) {
-            $result[$state->name] = [
-                'id' => $state->id,
-                'count' => $counts[$state->id] ?? 0,
-            ];
-        }
+            $result = [];
+            foreach ($states as $state) {
+                $result[$state->name] = [
+                    'id' => $state->id,
+                    'count' => $counts[$state->id] ?? 0,
+                ];
+            }
 
-        return $result;
+            return $result;
+        });
     }
 
     private function getDocumentsByCategory(): array
     {
-        $categories = Category::all();
-        $counts = Document::select('category_id', DB::raw('count(*) as total'))
-            ->groupBy('category_id')
-            ->pluck('total', 'category_id')
-            ->toArray();
+        return Cache::remember('dashboard.stats.documents_by_category', 900, function () {
+            $categories = Category::getCachedAll();
+            $counts = Document::select('category_id', DB::raw('count(*) as total'))
+                ->groupBy('category_id')
+                ->pluck('total', 'category_id')
+                ->toArray();
 
-        $result = [];
-        foreach ($categories as $category) {
-            $result[$category->name] = [
-                'id' => $category->id,
-                'count' => $counts[$category->id] ?? 0,
-            ];
-        }
+            $result = [];
+            foreach ($categories as $category) {
+                $result[$category->name] = [
+                    'id' => $category->id,
+                    'count' => $counts[$category->id] ?? 0,
+                ];
+            }
 
-        return $result;
+            return $result;
+        });
     }
 
     private function getRecentActivities(int $limit = 10)

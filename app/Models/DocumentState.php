@@ -20,4 +20,9 @@ class DocumentState extends Model
     {
         return $this->hasMany(DocumentVersion::class);
     }
+
+    public static function getCachedAll()
+    {
+        return cache()->rememberForever('document_states.all', fn () => self::all());
+    }
 }

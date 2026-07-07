@@ -34,4 +34,9 @@ class Category extends Model
 
         return Lang::has($key) ? __($key) : $this->name;
     }
+
+    public static function getCachedAll()
+    {
+        return cache()->rememberForever('categories.all', fn () => self::all());
+    }
 }

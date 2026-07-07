@@ -12,10 +12,10 @@ class DocumentResource extends JsonResource
         return [
             'id' => $this->id,
             'code' => $this->code,
-            'category' => new CategoryResource($this->category),
+            'category' => new CategoryResource($this->whenLoaded('category')),
             'priority' => $this->priority->label(),
-            'responsible' => new UserResource($this->responsibleUser),
-            'current_version' => new DocumentVersionResource($this->currentVersion),
+            'responsible' => new UserResource($this->whenLoaded('responsibleUser')),
+            'current_version' => new DocumentVersionResource($this->whenLoaded('currentVersion')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

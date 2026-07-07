@@ -36,8 +36,8 @@ class DocumentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $categories = Category::all();
-        $states = DocumentState::all();
+        $categories = Category::getCachedAll();
+        $states = DocumentState::getCachedAll();
         $priorities = DocumentPriority::cases();
 
         return view('documents.index', compact('documents', 'categories', 'states', 'priorities'));
@@ -47,7 +47,7 @@ class DocumentController extends Controller
     {
         Gate::authorize('create', Document::class);
 
-        $categories = Category::all();
+        $categories = Category::getCachedAll();
         $priorities = DocumentPriority::cases();
 
         return view('documents.create', compact('categories', 'priorities'));
@@ -133,7 +133,7 @@ class DocumentController extends Controller
     {
         Gate::authorize('update', $document);
 
-        $categories = Category::all();
+        $categories = Category::getCachedAll();
         $priorities = DocumentPriority::cases();
 
         $document->load('currentVersion');
