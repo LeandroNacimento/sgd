@@ -26,7 +26,7 @@ class StoreDocumentAttachmentRequest extends FormRequest
             'file' => [
                 'required',
                 'file',
-                'mimes:pdf,doc,docx,jpg,jpeg,png',
+                'extensions:pdf,doc,docx,jpg,jpeg,png',
                 'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png',
                 'max:10240',
             ],

@@ -72,6 +72,13 @@ class DocumentVersion extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('attachments')
-            ->useDisk(config('filesystems.media_disk')); // Use configurable storage
+            ->useDisk(config('filesystems.media_disk'))
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'image/jpeg',
+                'image/png',
+            ]);
     }
 }
