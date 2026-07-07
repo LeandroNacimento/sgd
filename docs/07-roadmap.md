@@ -46,7 +46,7 @@
 
 - **M19**: Document Versioning (Completed)
 - **M20**: Notifications (Events, Listeners, Queues) (Completed)
-- **M15**: REST API (Sanctum + Resources + OpenAPI)
+- **M22**: Internal REST API (Sanctum + Resources)
 - **M16**: Azure Blob Storage (Completed)
 - **M17**: Hybrid Search over document metadata and OCR extracted content (Completed)
 - **M18**: Background Jobs & Asynchronous Processing (Completed)

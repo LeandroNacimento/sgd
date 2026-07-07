@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\DocumentAuditController;
 use App\Http\Controllers\Api\V1\DocumentController;
 use App\Http\Controllers\Api\V1\DocumentVersionController;
 use App\Http\Controllers\Api\V1\DocumentWorkflowController;
+use App\Http\Controllers\Api\V1\SystemAuditController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -37,5 +38,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // Document Audit
         Route::get('/documents/{document}/audit', [DocumentAuditController::class, 'index']);
+
+        // System Audit (Admin only)
+        Route::middleware('can:is-admin')->group(function () {
+            Route::get('/audit-logs', [SystemAuditController::class, 'index']);
+        });
     });
 });
