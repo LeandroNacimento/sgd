@@ -23,6 +23,6 @@ class DocumentState extends Model
 
     public static function getCachedAll()
     {
-        return cache()->rememberForever('document_states.all', fn () => self::all());
+        return self::all();
     }
 }

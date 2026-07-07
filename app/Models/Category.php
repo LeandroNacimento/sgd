@@ -37,6 +37,6 @@ class Category extends Model
 
     public static function getCachedAll()
     {
-        return cache()->rememberForever('categories.all', fn () => self::all());
+        return self::all();
     }
 }

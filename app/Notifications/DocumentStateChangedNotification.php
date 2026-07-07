@@ -55,7 +55,11 @@ class DocumentStateChangedNotification extends Notification implements ShouldQue
             'title' => $this->document->title,
             'old_state' => $this->oldStateName,
             'new_state' => $this->newStateName,
-            'message' => "Document {$this->document->code} changed state from {$this->oldStateName} to {$this->newStateName}.",
+            'message' => __('notifications.document_state_changed', [
+                'code' => $this->document->code,
+                'old' => $this->oldStateName,
+                'new' => $this->newStateName,
+            ]),
         ];
     }
 }

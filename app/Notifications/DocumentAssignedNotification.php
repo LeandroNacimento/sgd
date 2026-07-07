@@ -51,7 +51,7 @@ class DocumentAssignedNotification extends Notification implements ShouldQueue
             'document_id' => $this->document->id,
             'code' => $this->document->code,
             'title' => $this->document->title,
-            'message' => "Document {$this->document->code} has been assigned to you.",
+            'message' => __('notifications.document_assigned', ['code' => $this->document->code]),
         ];
     }
 }
