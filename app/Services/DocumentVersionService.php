@@ -38,7 +38,7 @@ class DocumentVersionService
 
             // Duplicate Media references without duplicating physical files
             foreach ($currentVersion->getMedia('attachments') as $media) {
-                $newMedia = $media->replicate();
+                $newMedia = $media->replicate(['uuid']);
                 $newMedia->model_type = DocumentVersion::class;
                 $newMedia->model_id = $newVersion->id;
 
@@ -83,7 +83,7 @@ class DocumentVersionService
 
             // Duplicate Media references without duplicating physical files from the target version
             foreach ($targetVersion->getMedia('attachments') as $media) {
-                $newMedia = $media->replicate();
+                $newMedia = $media->replicate(['uuid']);
                 $newMedia->model_type = DocumentVersion::class;
                 $newMedia->model_id = $newVersion->id;
 

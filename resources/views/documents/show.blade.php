@@ -80,7 +80,7 @@
                     <h2 class="text-lg font-semibold text-slate-900">{{ __('documents.section_versions') }}</h2>
                 </x-slot>
                 <ul class="divide-y divide-slate-200">
-                    @foreach($document->versions()->orderBy('version_number', 'desc')->get() as $histVersion)
+                    @foreach($historyVersions as $histVersion)
                         <li class="p-4 hover:bg-slate-50 ds-transition {{ $histVersion->id === $version->id ? 'bg-blue-50/30' : '' }}">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div class="flex items-center gap-3">

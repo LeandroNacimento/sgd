@@ -77,7 +77,14 @@ class DashboardService
 
     private function getRecentActivities(int $limit = 10)
     {
-        return Activity::with('causer', 'subject')
+        return Activity::with([
+            'causer',
+            'subject' => function ($morphTo) {
+                $morphTo->morphWith([
+                    \App\Models\DocumentVersion::class => ['document'],
+                ]);
+            }
+        ])
             ->latest()
             ->take($limit)
             ->get();

@@ -39,6 +39,8 @@ test('viewer cannot create document', function () {
 });
 
 test('operator can view create form and store document', function () {
+    $this->withoutExceptionHandling();
+
     $this->actingAs($this->operator)
         ->get(route('documents.create'))
         ->assertOk();

@@ -67,11 +67,11 @@ class DocumentController extends Controller
     {
         Gate::authorize('view', $document);
 
-        $document->load(['category', 'responsibleUser', 'versions.documentState']);
+        $document->load(['category', 'responsibleUser', 'currentVersion.documentState']);
 
         $versionId = request('version_id');
         $version = $versionId
-            ? $document->versions()->findOrFail($versionId)
+            ? $document->versions()->with('documentState')->findOrFail($versionId)
             : $document->currentVersion;
 
         $activities = $this->auditLogger->getDocumentTimeline($document);
@@ -80,7 +80,12 @@ class DocumentController extends Controller
             return $this->mapActivityToTimelineItemData($activity);
         });
 
-        return view('documents.show', compact('document', 'version', 'timelineItems'));
+        $historyVersions = $document->versions()
+            ->with('documentState')
+            ->orderBy('version_number', 'desc')
+            ->get();
+
+        return view('documents.show', compact('document', 'version', 'timelineItems', 'historyVersions'));
     }
 
     private function mapActivityToTimelineItemData(Activity $activity): TimelineItemData

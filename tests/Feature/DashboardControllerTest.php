@@ -89,6 +89,6 @@ test('dashboard displays recent activities with document data', function () {
         ->assertOk()
         ->assertViewHas('recent_activities', fn ($activities) => $activities->isNotEmpty())
         ->assertSee($document->code)
-        ->assertSee(DocumentStateName::Draft->value)
-        ->assertSee(DocumentStateName::InReview->value);
+        ->assertSee(DocumentStateName::Draft->label())
+        ->assertSee(DocumentStateName::InReview->label());
 });

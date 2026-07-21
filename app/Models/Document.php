@@ -35,9 +35,9 @@ class Document extends Model
             // Temporary workaround for factories and tests that pass legacy columns.
             // We store them in a temporary property for DocumentFactory to read,
             // and unset them from attributes so MySQL doesn't fail.
-            $document->_temp_title = $document->title ?? null;
-            $document->_temp_description = $document->description ?? null;
-            $document->_temp_document_state_id = $document->document_state_id ?? null;
+            $document->_temp_title = array_key_exists('title', $document->getAttributes()) ? $document->getAttribute('title') : null;
+            $document->_temp_description = array_key_exists('description', $document->getAttributes()) ? $document->getAttribute('description') : null;
+            $document->_temp_document_state_id = array_key_exists('document_state_id', $document->getAttributes()) ? $document->getAttribute('document_state_id') : null;
 
             unset($document->title);
             unset($document->description);
@@ -55,6 +55,12 @@ class Document extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)
+            ->with('currentVersion.documentState');
     }
 
     public function responsibleUser(): BelongsTo
@@ -77,6 +83,8 @@ class Document extends Model
         $array = [
             'code' => $this->code,
         ];
+
+        $this->loadMissing('currentVersion');
 
         if ($this->currentVersion) {
             $array['title'] = $this->currentVersion->title;

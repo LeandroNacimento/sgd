@@ -50,7 +50,7 @@ class DocumentAssignedNotification extends Notification implements ShouldQueue
         return [
             'document_id' => $this->document->id,
             'code' => $this->document->code,
-            'title' => $this->document->title,
+            'title' => $this->document->currentVersion?->title,
             'message' => __('notifications.document_assigned', ['code' => $this->document->code]),
         ];
     }
